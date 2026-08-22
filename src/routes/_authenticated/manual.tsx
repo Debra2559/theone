@@ -17,6 +17,7 @@ import { generateManual, getManual, getMyProfile, getTestResults } from "@/lib/a
 import { createThread } from "@/lib/counselor.functions";
 import { AppShell, RouteError } from "@/components/app-shell";
 import { SharePosterButton } from "@/components/poster-share";
+import { ShareRelationshipInvite } from "@/components/share-relationship-invite";
 import { UserAvatar } from "@/components/user-avatar";
 import { TESTS } from "@/lib/tests";
 
@@ -139,11 +140,11 @@ function Manual() {
   const measuredTests = TESTS.filter((test) => resultMap[test.id]);
   const profileAge = getAge(profile?.birth_date);
   const reportTraits = [
-    ["性格底色", resultMap.mbti?.label],
-    ["亲密节奏", resultMap.attachment?.label],
-    ["被爱方式", resultMap.loveLanguage?.label],
-    ["关系电量", resultMap.needs?.label],
-    ["生活气质", resultMap.element?.label ?? resultMap.zodiac?.label],
+    ["性格底色", resultMap["mbti"]?.label],
+    ["亲密节奏", resultMap["attachment"]?.label],
+    ["被爱方式", resultMap["loveLanguage"]?.label],
+    ["关系电量", resultMap["needs"]?.label],
+    ["生活气质", resultMap["element"]?.label ?? resultMap["zodiac"]?.label],
   ].filter((trait): trait is [string, string] => Boolean(trait[1])) as [string, string][];
   const reportChapters: ReportChapter[] = [
     {
@@ -168,8 +169,8 @@ function Manual() {
       title: "你在社交里的边界感",
       subtitle: "边界不是拒绝靠近，而是让靠近变得舒服。",
       points: boundarySection?.points?.slice(0, 3) ?? [
-        resultMap.attachment?.summary ?? "你需要先建立信任，再把更柔软的一面交出来。",
-        resultMap.needs?.summary ?? "适合你的关系，会尊重亲密和独处之间的呼吸感。",
+        resultMap["attachment"]?.summary ?? "你需要先建立信任，再把更柔软的一面交出来。",
+        resultMap["needs"]?.summary ?? "适合你的关系，会尊重亲密和独处之间的呼吸感。",
       ],
     },
     {
@@ -179,9 +180,9 @@ function Manual() {
       points:
         relationshipSection?.points?.slice(0, 4) ??
         [
-          resultMap.attachment?.summary,
-          resultMap.loveLanguage?.summary,
-          resultMap.needs?.summary,
+          resultMap["attachment"]?.summary,
+          resultMap["loveLanguage"]?.summary,
+          resultMap["needs"]?.summary,
         ].filter((point): point is string => Boolean(point)),
     },
     {
@@ -217,7 +218,7 @@ function Manual() {
 
   return (
     <AppShell>
-      <div className="flex flex-wrap items-end justify-between gap-3">
+      <div className="manual-header flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-bold md:text-3xl">
             {profile?.nickname} 的<span className="gradient-text">使用说明书</span>
@@ -227,7 +228,8 @@ function Manual() {
           </p>
         </div>
         {hasManual && (
-          <div className="flex flex-wrap gap-2">
+          <div className="manual-actions flex flex-wrap gap-2">
+            <ShareRelationshipInvite />
             <SharePosterButton
               filename={`心动说明书-${profile?.nickname ?? "我"}.png`}
               data={{

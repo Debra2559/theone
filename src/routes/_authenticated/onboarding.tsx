@@ -18,11 +18,15 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  validateSearch: (search: Record<string, unknown>): { edit?: boolean } => {
+  validateSearch: (search: Record<string, unknown>): { edit?: boolean; invite?: string } => {
     const edit = search["edit"] === true || search["edit"] === "true";
-    return edit ? { edit: true } : {};
+    const invite =
+      typeof search["invite"] === "string" && /^[a-f0-9]{32}$/i.test(search["invite"])
+        ? search["invite"]
+        : undefined;
+    return { ...(edit ? { edit: true } : {}), ...(invite ? { invite } : {}) };
   },
-  loaderDeps: ({ search }) => ({ edit: search.edit }),
+  loaderDeps: ({ search }) => ({ edit: search.edit, invite: search.invite }),
   loader: async ({ deps }) => {
     const profile = await getMyProfile();
     if (profile?.onboarding_done && !deps.edit) throw redirect({ to: "/home" });
@@ -30,7 +34,6 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
   },
   component: Onboarding,
 });
-
 
 const GENDERS = [
   { value: "male", label: "男生" },
@@ -41,7 +44,7 @@ const GENDERS = [
 function Onboarding() {
   const navigate = useNavigate();
   const profile = Route.useLoaderData();
-  const { edit } = Route.useSearch();
+  const { edit, invite } = Route.useSearch();
   const [nickname, setNickname] = useState(profile?.nickname ?? "");
   const [gender, setGender] = useState(profile?.gender ?? "secret");
   const [birthDate, setBirthDate] = useState(profile?.birth_date ?? "");
@@ -74,7 +77,11 @@ function Onboarding() {
         },
       });
       toast.success(edit ? "资料已更新 ✨" : "资料保存好啦，欢迎入住小镇 ✨");
-      navigate({ to: "/home" });
+      if (invite) {
+        navigate({ to: "/invite/$token", params: { token: invite } });
+      } else {
+        navigate({ to: "/home" });
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "保存失败");
       setBusy(false);
@@ -87,8 +94,12 @@ function Onboarding() {
         <div className="flex items-center gap-3">
           <img src={foxImg} alt="狐军师" className="h-12 w-12 object-contain" />
           <div>
-            <h1 className="font-display text-2xl font-bold gradient-text">{edit ? "编辑资料 ✏️" : "初次见面 👋"}</h1>
-            <p className="text-xs text-muted-foreground">{edit ? "更新你的信息，说明书会更准" : "先认识一下你，30 秒就好"}</p>
+            <h1 className="font-display text-2xl font-bold gradient-text">
+              {edit ? "编辑资料 ✏️" : "初次见面 👋"}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              {edit ? "更新你的信息，说明书会更准" : "先认识一下你，30 秒就好"}
+            </p>
           </div>
         </div>
 

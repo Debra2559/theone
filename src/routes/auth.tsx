@@ -17,6 +17,13 @@ export const Route = createFileRoute("/auth")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { invite?: string } => {
+    const invite =
+      typeof search["invite"] === "string" && /^[a-f0-9]{32}$/i.test(search["invite"])
+        ? search["invite"]
+        : undefined;
+    return invite ? { invite } : {};
+  },
   component: Auth,
 });
 
@@ -24,6 +31,7 @@ type Mode = "login" | "signup" | "forgot";
 
 function Auth() {
   const navigate = useNavigate();
+  const { invite } = Route.useSearch();
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,12 +62,20 @@ function Auth() {
           setMode("login");
           return;
         }
-        navigate({ to: "/home" });
+        if (invite) {
+          navigate({ to: "/invite/$token", params: { token: invite } });
+        } else {
+          navigate({ to: "/home" });
+        }
         return;
       }
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      navigate({ to: "/home" });
+      if (invite) {
+        navigate({ to: "/invite/$token", params: { token: invite } });
+      } else {
+        navigate({ to: "/home" });
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "操作失败，再试一次");
     } finally {
@@ -69,7 +85,9 @@ function Auth() {
 
   const google = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: invite
+        ? `${window.location.origin}/auth?invite=${encodeURIComponent(invite)}`
+        : window.location.origin,
     });
     if (result.error) toast.error("Google 登录失败，再试一次");
   };
@@ -180,8 +198,7 @@ function Auth() {
               onClick={google}
               className="flex w-full items-center justify-center gap-2 rounded-full border border-input bg-card py-3 text-sm font-medium transition-colors hover:bg-secondary"
             >
-              <Chrome className="h-4 w-4" />
-              用 Google 继续
+              <Chrome className="h-4 w-4" />用 Google 继续
             </button>
           </>
         )}

@@ -17,6 +17,13 @@ export const Route = createFileRoute("/_authenticated/home")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { invite?: string } => {
+    const invite =
+      typeof search["invite"] === "string" && /^[a-f0-9]{32}$/i.test(search["invite"])
+        ? search["invite"]
+        : undefined;
+    return invite ? { invite } : {};
+  },
   loader: async () => {
     const data = await getHomeData();
     if (!data.profile?.onboarding_done) throw redirect({ to: "/onboarding" });
@@ -28,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/home")({
 
 function Home() {
   const { profile, testCount, testIds, hasManual } = Route.useLoaderData();
+  const { invite } = Route.useSearch();
   const totalTests = TESTS.length;
   const percent = Math.round((testCount / totalTests) * 100);
 
@@ -50,6 +58,26 @@ function Home() {
           </span>
         </Link>
       </header>
+
+      {invite && (
+        <section className="invite-return-banner mt-5">
+          <p className="home-kicker">A SHARED FIELD GUIDE</p>
+          <p className="mt-1 font-display text-base font-semibold">
+            {testCount > 0
+              ? "测试完成，回到邀请函查看你们的报告"
+              : "完成一个测试，解锁你们的关系报告"}
+          </p>
+          {testCount > 0 && (
+            <Link
+              to="/invite/$token"
+              params={{ token: invite }}
+              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary"
+            >
+              回到邀请函 <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+        </section>
+      )}
 
       <section className="manual-feature relative mt-7 overflow-hidden">
         <div className="manual-feature-grain pointer-events-none absolute inset-0" />
@@ -91,6 +119,7 @@ function Home() {
           <Link
             to="/tests/$testId"
             params={{ testId: TESTS[0]!.id }}
+            search={invite ? { invite } : {}}
             className="manual-feature-cta"
           >
             <BookOpen className="h-4 w-4" />
@@ -124,6 +153,7 @@ function Home() {
                 key={t.id}
                 to="/tests/$testId"
                 params={{ testId: t.id }}
+                search={invite ? { invite } : {}}
                 className={`home-test-card home-test-card-${i % 4} group relative overflow-hidden transition-transform hover:-translate-y-1 active:scale-[0.98]`}
               >
                 <div className="home-test-card-top">
