@@ -1,0 +1,1366 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * 「心动说明书」设计系统 v2 — 画笔质感 · 编辑级排版
+ * 暖纸底 + 墨色衬线标题 + 哑光鸢尾紫 + 陶土色细节
+ * 方向：编辑部式恋爱档案，克制、留白、带纸本触感
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-blush: var(--blush);
+  --color-blush-foreground: var(--blush-foreground);
+  --color-starlight: var(--starlight);
+  --color-starlight-foreground: var(--starlight-foreground);
+  --color-dusk: var(--dusk);
+  --color-dusk-foreground: var(--dusk-foreground);
+  --color-candy-yellow: var(--candy-yellow);
+  --color-candy-lilac: var(--candy-lilac);
+  --color-candy-pink: var(--candy-pink);
+  --color-candy-mint: var(--candy-mint);
+  --color-candy-sky: var(--candy-sky);
+  --color-candy-peach: var(--candy-peach);
+  --color-rose: var(--rose);
+  --color-rose-foreground: var(--rose-foreground);
+}
+
+@theme {
+  --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", "Noto Serif SC", "Songti SC", "STSong", serif;
+  --animate-twinkle: twinkle 3s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-drift: drift 9s ease-in-out infinite;
+  --animate-heartbeat: heartbeat 1.8s ease-in-out infinite;
+}
+
+:root {
+  --radius: 0.82rem;
+  /* 暖纸底 */
+  --background: oklch(0.965 0.014 82);
+  /* 深墨紫：比纯黑更柔和，但保持阅读对比度 */
+  --foreground: oklch(0.27 0.03 315);
+  --card: oklch(0.995 0.006 88);
+  --card-foreground: oklch(0.27 0.03 315);
+  --popover: oklch(0.995 0.006 88);
+  --popover-foreground: oklch(0.27 0.03 315);
+  /* 哑光鸢尾紫（主色） */
+  --primary: oklch(0.48 0.1 306);
+  --primary-foreground: oklch(0.98 0.01 90);
+  /* 亚麻灰紫：用于低层级背景 */
+  --secondary: oklch(0.925 0.018 300);
+  --secondary-foreground: oklch(0.36 0.04 310);
+  --muted: oklch(0.94 0.012 88);
+  --muted-foreground: oklch(0.49 0.025 315);
+  /* 陶土金，用于高分和少量重点 */
+  --accent: oklch(0.62 0.1 57);
+  --accent-foreground: oklch(0.31 0.045 55);
+  --destructive: oklch(0.58 0.18 25);
+  --destructive-foreground: oklch(0.98 0.01 90);
+  --border: oklch(0.875 0.018 300);
+  --input: oklch(0.85 0.022 300);
+  --ring: oklch(0.48 0.1 306);
+  --chart-1: oklch(0.48 0.1 306);
+  --chart-2: oklch(0.62 0.1 57);
+  --chart-3: oklch(0.56 0.1 350);
+  --chart-4: oklch(0.54 0.08 230);
+  --chart-5: oklch(0.55 0.08 160);
+  --sidebar: oklch(0.96 0.012 82);
+  --sidebar-foreground: oklch(0.27 0.03 315);
+  --sidebar-primary: oklch(0.48 0.1 306);
+  --sidebar-primary-foreground: oklch(0.98 0.01 90);
+  --sidebar-accent: oklch(0.925 0.018 300);
+  --sidebar-accent-foreground: oklch(0.36 0.04 310);
+  --sidebar-border: oklch(0.875 0.018 300);
+  --sidebar-ring: oklch(0.48 0.1 306);
+  /* 自定义语义色 */
+  --blush: oklch(0.92 0.035 350);
+  --blush-foreground: oklch(0.47 0.1 350);
+  --starlight: oklch(0.92 0.045 84);
+  --starlight-foreground: oklch(0.47 0.09 68);
+  --dusk: oklch(0.9 0.035 306);
+  --dusk-foreground: oklch(0.43 0.08 306);
+  /* 低饱和纸张配色 */
+  --candy-yellow: oklch(0.92 0.065 95);
+  --candy-lilac: oklch(0.89 0.04 305);
+  --candy-pink: oklch(0.91 0.04 350);
+  --candy-mint: oklch(0.91 0.04 165);
+  --candy-sky: oklch(0.9 0.03 240);
+  --candy-peach: oklch(0.91 0.05 65);
+  /* 玫瑰色只承担小面积情绪 */
+  --rose: oklch(0.68 0.1 350);
+  --rose-foreground: oklch(0.43 0.11 350);
+}
+
+.dark {
+  --background: oklch(0.975 0.006 85);
+  --foreground: oklch(0.28 0.035 300);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.28 0.035 300);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.28 0.035 300);
+  --primary: oklch(0.5 0.12 295);
+  --primary-foreground: oklch(0.98 0.01 95);
+  --secondary: oklch(0.945 0.015 295);
+  --secondary-foreground: oklch(0.36 0.05 295);
+  --muted: oklch(0.95 0.008 290);
+  --muted-foreground: oklch(0.5 0.03 295);
+  --accent: oklch(0.68 0.11 60);
+  --accent-foreground: oklch(0.3 0.06 55);
+  --destructive: oklch(0.58 0.18 25);
+  --destructive-foreground: oklch(0.98 0.01 90);
+  --border: oklch(0.92 0.012 290);
+  --input: oklch(0.9 0.012 290);
+  --ring: oklch(0.5 0.12 295);
+  --chart-1: oklch(0.5 0.12 295);
+  --chart-2: oklch(0.68 0.11 60);
+  --chart-3: oklch(0.56 0.1 330);
+  --chart-4: oklch(0.58 0.09 235);
+  --chart-5: oklch(0.62 0.08 160);
+  --sidebar: oklch(0.97 0.008 85);
+  --sidebar-foreground: oklch(0.28 0.035 300);
+  --sidebar-primary: oklch(0.5 0.12 295);
+  --sidebar-primary-foreground: oklch(0.98 0.01 95);
+  --sidebar-accent: oklch(0.945 0.015 295);
+  --sidebar-accent-foreground: oklch(0.36 0.05 295);
+  --sidebar-border: oklch(0.92 0.012 290);
+  --sidebar-ring: oklch(0.5 0.12 295);
+  --blush: oklch(0.94 0.03 350);
+  --blush-foreground: oklch(0.5 0.11 350);
+  --starlight: oklch(0.95 0.04 95);
+  --starlight-foreground: oklch(0.52 0.1 75);
+  --dusk: oklch(0.93 0.035 295);
+  --dusk-foreground: oklch(0.46 0.1 295);
+  --candy-yellow: oklch(0.94 0.07 98);
+  --candy-lilac: oklch(0.91 0.045 298);
+  --candy-pink: oklch(0.93 0.04 350);
+  --candy-mint: oklch(0.94 0.04 165);
+  --candy-sky: oklch(0.93 0.03 240);
+  --candy-peach: oklch(0.93 0.04 65);
+  --rose: oklch(0.74 0.1 350);
+  --rose-foreground: oklch(0.46 0.12 350);
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  33% {
+    transform: translate(6px, -8px) rotate(2deg);
+  }
+  66% {
+    transform: translate(-5px, -4px) rotate(-2deg);
+  }
+}
+
+@keyframes heartbeat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.14);
+  }
+  45% {
+    transform: scale(0.96);
+  }
+  65% {
+    transform: scale(1.07);
+  }
+}
+
+@keyframes cupid-shoot {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translateX(-10px) scale(0.7);
+  }
+  28%,
+  76% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(310px) scale(0.85);
+  }
+}
+
+@keyframes arrow-flight {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px) scaleX(0.2);
+  }
+  24% {
+    opacity: 1;
+    transform: translateX(0) scaleX(1);
+  }
+  75% {
+    opacity: 1;
+    transform: translateX(220px) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(310px) scaleX(0.4);
+  }
+}
+
+@keyframes travel-me {
+  0%,
+  12% {
+    transform: translate(0, 0) rotate(-5deg);
+  }
+  72% {
+    transform: translate(125px, -28px) rotate(4deg);
+  }
+  100% {
+    transform: translate(145px, 2px) rotate(0);
+  }
+}
+
+@keyframes travel-them {
+  0%,
+  12% {
+    transform: translate(0, 0) rotate(5deg);
+  }
+  72% {
+    transform: translate(-125px, -28px) rotate(-4deg);
+  }
+  100% {
+    transform: translate(-145px, 2px) rotate(0);
+  }
+}
+
+@keyframes bridge-water {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(18px);
+  }
+}
+
+.one-on-one-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--color-primary) 12%, var(--color-border));
+  border-radius: 2rem;
+  background: color-mix(in oklab, var(--color-card) 90%, var(--color-candy-lilac));
+  box-shadow: 0 24px 60px -40px oklch(0.35 0.08 295 / 45%);
+}
+
+.one-on-one-seal {
+  display: flex;
+  height: 68px;
+  width: 68px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  color: var(--color-primary-foreground);
+  background: linear-gradient(145deg, var(--color-primary), var(--color-chart-3));
+  box-shadow: 0 12px 24px -12px var(--color-primary);
+}
+
+.one-on-one-scene-wrap {
+  background:
+    radial-gradient(circle at 74% 21%, oklch(0.96 0.06 58 / 80%), transparent 24%),
+    linear-gradient(180deg, oklch(0.98 0.03 95), oklch(0.94 0.05 220));
+}
+
+.one-on-one-scene {
+  position: relative;
+  height: 360px;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  background: linear-gradient(180deg, oklch(0.96 0.04 88) 0 55%, oklch(0.84 0.07 215) 55% 100%);
+}
+
+.one-on-one-stars {
+  position: absolute;
+  inset: 0;
+  opacity: 0.7;
+  background-image:
+    radial-gradient(circle at 18% 18%, oklch(0.98 0.03 80) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 38% 29%, oklch(0.98 0.03 80) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 84% 15%, oklch(0.98 0.03 80) 0 2px, transparent 2.5px),
+    radial-gradient(circle at 66% 32%, oklch(0.98 0.03 80) 0 1px, transparent 1.5px);
+}
+
+.cupid-character {
+  position: absolute;
+  right: 11%;
+  top: 15%;
+  z-index: 4;
+  display: grid;
+  height: 72px;
+  width: 72px;
+  place-items: center;
+  border-radius: 28px;
+  color: var(--color-primary);
+  background: oklch(1 0 0 / 82%);
+  box-shadow: 0 16px 28px -18px oklch(0.35 0.1 295 / 70%);
+  animation: cupid-shoot 2.8s ease-in-out both;
+}
+
+.cupid-head {
+  display: grid;
+  height: 34px;
+  width: 34px;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--color-accent-foreground);
+  background: var(--color-starlight);
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.cupid-wing {
+  position: absolute;
+  top: 19px;
+  height: 24px;
+  width: 18px;
+  border: 2px solid color-mix(in oklab, var(--color-primary) 45%, white);
+  background: oklch(1 0 0 / 55%);
+}
+
+.cupid-wing-left {
+  left: 8px;
+  border-radius: 70% 25% 70% 30%;
+  transform: rotate(-24deg);
+}
+.cupid-wing-right {
+  right: 8px;
+  border-radius: 25% 70% 30% 70%;
+  transform: rotate(24deg);
+}
+
+.cupid-bow {
+  position: absolute;
+  right: -12px;
+  top: 33px;
+  height: 27px;
+  width: 20px;
+  border: 2px solid var(--color-rose-foreground);
+  border-left: 0;
+  border-radius: 0 100% 100% 0;
+  transform: rotate(-18deg);
+}
+
+.cupid-label {
+  position: absolute;
+  bottom: -19px;
+  white-space: nowrap;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+}
+
+.love-arrow {
+  position: absolute;
+  right: 25%;
+  top: 31%;
+  z-index: 3;
+  height: 2px;
+  width: 47%;
+  transform-origin: right center;
+  background: var(--color-rose-foreground);
+  animation: arrow-flight 2.8s ease-in-out both;
+}
+
+.love-arrow::before,
+.love-arrow::after {
+  position: absolute;
+  content: "";
+  right: 0;
+  height: 2px;
+  width: 10px;
+  background: var(--color-rose-foreground);
+}
+
+.love-arrow::before {
+  transform: rotate(28deg);
+  transform-origin: right;
+}
+.love-arrow::after {
+  transform: rotate(-28deg);
+  transform-origin: right;
+}
+.love-arrow span {
+  position: absolute;
+  left: 42%;
+  top: -8px;
+  height: 18px;
+  width: 18px;
+  border-radius: 50% 50% 45% 0;
+  background: var(--color-rose-foreground);
+  transform: rotate(-45deg);
+}
+
+.traveler {
+  position: absolute;
+  bottom: 104px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-foreground);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.traveler-me {
+  left: 12%;
+  animation: travel-me 2.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.traveler-them {
+  right: 12%;
+  animation: travel-them 2.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+.traveler-avatar {
+  display: flex;
+  height: 58px;
+  width: 58px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 4px solid oklch(1 0 0 / 80%);
+  border-radius: 20px;
+  background: var(--color-card);
+  box-shadow: 0 10px 20px -14px oklch(0.25 0.08 260 / 65%);
+}
+.traveler-avatar-me {
+  transform: rotate(-6deg);
+}
+.traveler-avatar-them {
+  transform: rotate(6deg);
+}
+
+.bridge-scene {
+  position: absolute;
+  inset: auto 0 0;
+  height: 145px;
+}
+.bridge-rail {
+  position: absolute;
+  bottom: 73px;
+  z-index: 2;
+  height: 50px;
+  width: 45%;
+  border-top: 4px solid oklch(0.46 0.08 28);
+  border-radius: 50% 50% 0 0;
+}
+.bridge-rail-left {
+  left: -13%;
+  transform: rotate(7deg);
+}
+.bridge-rail-right {
+  right: -13%;
+  transform: rotate(-7deg);
+}
+.bridge-deck {
+  position: absolute;
+  bottom: 58px;
+  left: 15%;
+  right: 15%;
+  z-index: 2;
+  height: 20px;
+  border-radius: 50%;
+  background: oklch(0.53 0.1 28);
+  box-shadow: 0 10px 0 oklch(0.43 0.08 28 / 35%);
+}
+.bridge-water {
+  position: absolute;
+  left: -5%;
+  width: 110%;
+  height: 30px;
+  border-top: 2px solid oklch(0.97 0.04 220 / 75%);
+  border-radius: 50%;
+  animation: bridge-water 5s ease-in-out infinite;
+}
+.bridge-water-one {
+  bottom: 30px;
+}
+.bridge-water-two {
+  bottom: 3px;
+  animation-delay: -1.7s;
+  opacity: 0.65;
+}
+.scene-caption {
+  position: absolute;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  text-align: center;
+  color: oklch(0.3 0.07 260 / 75%);
+  font-size: 11px;
+}
+
+.life-book-shell {
+  position: relative;
+  perspective: 1800px;
+}
+
+.life-book {
+  position: relative;
+  min-height: 536px;
+  transform-style: preserve-3d;
+}
+
+.life-book.is-closed {
+  min-height: 520px;
+}
+
+.life-book-cover {
+  position: relative;
+  display: flex;
+  min-height: 520px;
+  width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid oklch(0.27 0.04 315 / 35%);
+  border-radius: 0.8rem 1.15rem 1.15rem 0.8rem;
+  background:
+    linear-gradient(135deg, oklch(0.38 0.05 315), oklch(0.28 0.04 315)), var(--foreground);
+  color: oklch(0.97 0.02 85);
+  padding: 2rem 1.65rem 1.35rem;
+  text-align: left;
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 18%) inset,
+    13px 0 0 -9px oklch(0.27 0.04 315 / 70%),
+    18px 0 30px -18px oklch(0.2 0.05 315 / 65%),
+    0 24px 42px -24px oklch(0.25 0.05 315 / 45%);
+  transform-origin: left center;
+  transition:
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.4s;
+}
+
+.life-book-cover::before {
+  position: absolute;
+  inset: 0.8rem;
+  border: 1px solid oklch(0.94 0.04 85 / 35%);
+  border-radius: 0.45rem 0.8rem 0.8rem 0.45rem;
+  content: "";
+  pointer-events: none;
+}
+
+.life-book-cover::after {
+  position: absolute;
+  right: -15%;
+  bottom: -14%;
+  height: 55%;
+  width: 72%;
+  border: 1px solid oklch(0.94 0.04 85 / 18%);
+  border-radius: 50%;
+  content: "";
+  transform: rotate(-22deg);
+}
+
+.life-book-cover:hover {
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 18%) inset,
+    13px 0 0 -9px oklch(0.27 0.04 315 / 70%),
+    18px 0 30px -15px oklch(0.2 0.05 315 / 68%),
+    0 30px 52px -25px oklch(0.25 0.05 315 / 52%);
+  transform: translateY(-3px) rotate(-0.5deg);
+}
+
+.life-book-cover-mark,
+.life-book-cover-foot,
+.life-book-kicker {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.life-book-cover-mark {
+  position: relative;
+  z-index: 1;
+  color: oklch(0.84 0.08 60);
+}
+
+.life-book-cover-rule {
+  position: relative;
+  z-index: 1;
+  display: block;
+  height: 1px;
+  width: 100%;
+  margin-top: 0.8rem;
+  background: oklch(0.94 0.04 85 / 45%);
+}
+
+.life-book-cover-title {
+  position: relative;
+  z-index: 1;
+  margin-top: 2.25rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 10vw, 3.5rem);
+  font-weight: 600;
+  line-height: 1.05;
+}
+
+.life-book-cover-title small {
+  display: block;
+  margin-top: 0.55rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: oklch(0.86 0.03 85 / 80%);
+}
+
+.life-book-cover-avatar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 148px;
+  width: 148px;
+  align-items: center;
+  justify-content: center;
+  margin: auto auto 1.5rem;
+  overflow: hidden;
+  border: 1px solid oklch(0.96 0.04 85 / 50%);
+  border-radius: 50%;
+  background: oklch(0.96 0.04 85 / 12%);
+  box-shadow: 0 16px 34px -22px oklch(0.1 0.05 315 / 75%);
+}
+
+.life-book-cover-foot {
+  position: relative;
+  z-index: 1;
+  color: oklch(0.86 0.03 85 / 65%);
+}
+
+.life-book-cover-open {
+  position: absolute;
+  right: 1.65rem;
+  bottom: 1.25rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: oklch(0.84 0.08 60);
+  font-family: var(--font-sans);
+  font-size: 11px;
+}
+
+.life-book-open {
+  display: grid;
+  min-height: 536px;
+  grid-template-columns: 76px minmax(0, 1fr) minmax(0, 1fr);
+  overflow: hidden;
+  border: 1px solid oklch(0.36 0.04 315 / 20%);
+  border-radius: 0.8rem 1.15rem 1.15rem 0.8rem;
+  background: oklch(0.93 0.025 82);
+  box-shadow:
+    0 1px 0 oklch(1 0 0 / 80%) inset,
+    0 24px 48px -28px oklch(0.25 0.05 315 / 38%);
+}
+
+.life-book-index {
+  min-width: 0;
+  border-right: 1px solid oklch(0.36 0.04 315 / 13%);
+  background: oklch(0.89 0.025 300 / 55%);
+  padding: 1.1rem 0.55rem;
+}
+
+.life-book-index-item {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 0.2rem;
+  border-left: 2px solid transparent;
+  padding: 0.55rem 0.4rem;
+  text-align: left;
+  color: var(--muted-foreground);
+  transition:
+    color 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.life-book-index-item > span {
+  font-family: var(--font-sans);
+  font-size: 9px;
+}
+
+.life-book-index-item strong {
+  overflow: hidden;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.life-book-index-item:hover,
+.life-book-index-item.is-active {
+  border-left-color: var(--primary);
+  background: oklch(1 0 0 / 50%);
+  color: var(--primary);
+}
+
+.life-book-page {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  padding: 2rem 1.35rem 2.5rem;
+  background:
+    repeating-linear-gradient(0deg, transparent 0 27px, oklch(0.35 0.03 315 / 4%) 27px 28px),
+    oklch(0.98 0.012 88);
+}
+
+.life-book-page-intro {
+  border-right: 1px solid oklch(0.36 0.04 315 / 12%);
+}
+
+.social-report-greeting {
+  margin-top: 1.65rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+}
+
+.social-report-title {
+  max-width: 11rem;
+  margin-top: 0.45rem;
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 7vw, 3.45rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 0.98;
+}
+
+.social-report-title::first-line {
+  color: var(--foreground);
+}
+
+.social-report-spark {
+  display: block;
+  margin: 1.3rem auto 0;
+  color: var(--accent);
+  font-size: 1.25rem;
+  text-align: center;
+}
+
+.social-report-lede {
+  margin: 1rem auto 0;
+  max-width: 12rem;
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  line-height: 1.55;
+  text-align: center;
+}
+
+.social-report-note {
+  margin: 0.8rem auto 0;
+  max-width: 15rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  line-height: 1.65;
+  text-align: center;
+}
+
+.social-report-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 1.25rem;
+  border: 1px solid oklch(0.36 0.04 315 / 15%);
+  border-radius: 0.85rem;
+  background: oklch(1 0 0 / 52%);
+  padding: 0.65rem 0.7rem;
+  box-shadow: 0 10px 22px -20px oklch(0.25 0.05 315 / 55%);
+}
+
+.social-report-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.08rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+}
+
+.social-report-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.18rem;
+}
+
+.social-report-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.38rem;
+}
+
+.social-report-tags span {
+  border-bottom: 1px solid color-mix(in oklab, var(--rose) 55%, transparent);
+  color: var(--rose-foreground);
+  font-family: var(--font-sans);
+  font-size: 0.57rem;
+}
+
+.social-report-scroll-hint {
+  margin-top: 1.1rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+  font-size: 0.6rem;
+  text-align: center;
+}
+
+.social-report-chapter-title {
+  margin-top: 1.3rem;
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 5.5vw, 2.7rem);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.08;
+}
+
+.social-report-chapter-subtitle {
+  margin-top: 0.7rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.social-report-points {
+  margin-top: 1.45rem;
+  display: grid;
+  gap: 0;
+}
+
+.social-report-points li {
+  display: flex;
+  gap: 0.65rem;
+  border-top: 1px solid oklch(0.36 0.04 315 / 12%);
+  padding: 0.82rem 0;
+  color: oklch(0.3 0.03 315);
+  font-size: 0.78rem;
+  line-height: 1.75;
+}
+
+.social-report-points li:last-child {
+  border-bottom: 1px solid oklch(0.36 0.04 315 / 12%);
+}
+
+.social-report-traits {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.7rem;
+}
+
+.social-report-trait {
+  border-bottom: 1px solid oklch(0.36 0.04 315 / 12%);
+  color: var(--foreground);
+  font-family: var(--font-display);
+  font-size: 0.88rem;
+  padding: 0.72rem 0;
+}
+
+.social-report-trait strong {
+  color: var(--rose-foreground);
+  font-family: var(--font-sans);
+  font-size: 0.67rem;
+  font-weight: 600;
+}
+
+.life-book-page-chapter {
+  transform-origin: left center;
+  transform-style: preserve-3d;
+}
+
+.life-book-page-chapter.is-turning-forward {
+  animation: life-page-forward 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.life-book-page-chapter.is-turning-back {
+  animation: life-page-back 0.72s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: right center;
+}
+
+.life-book-chapter-line {
+  height: 1px;
+  width: 54px;
+  margin-top: 1.2rem;
+  background: var(--accent);
+}
+
+.life-book-point-number {
+  flex: 0 0 auto;
+  color: var(--primary);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.8;
+}
+
+.life-book-mini-avatar {
+  display: flex;
+  height: 44px;
+  width: 44px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid oklch(0.36 0.04 315 / 17%);
+  border-radius: 50%;
+  background: var(--secondary);
+}
+
+.life-book-folio {
+  position: absolute;
+  right: 1.3rem;
+  bottom: 1rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.life-book-badge {
+  border-bottom: 1px solid oklch(0.48 0.1 306 / 35%);
+  padding: 0.25rem 0.35rem;
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: 13px;
+}
+
+.social-report-match-cta {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  border: 1px solid color-mix(in oklab, var(--rose) 35%, var(--border));
+  border-radius: 0.85rem;
+  background: color-mix(in oklab, var(--card) 78%, var(--blush));
+  padding: 0.8rem 0.95rem;
+  color: var(--rose-foreground);
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.social-report-match-cta:hover {
+  background: color-mix(in oklab, var(--card) 60%, var(--blush));
+  transform: translateY(-1px);
+}
+
+.life-book-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin-top: 0.75rem;
+  padding: 0 0.2rem;
+  color: var(--muted-foreground);
+  font-family: var(--font-sans);
+  font-size: 10px;
+}
+
+.life-book-control {
+  display: inline-flex;
+  height: 30px;
+  width: 30px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid oklch(0.36 0.04 315 / 18%);
+  border-radius: 50%;
+  background: var(--card);
+  color: var(--foreground);
+  transition:
+    background 0.2s,
+    color 0.2s,
+    transform 0.2s;
+}
+
+.life-book-control:hover:not(:disabled) {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  transform: translateY(-1px);
+}
+
+.life-book-control:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+@keyframes life-page-forward {
+  0% {
+    box-shadow: 0 0 0 transparent;
+    transform: rotateY(0deg);
+  }
+  45% {
+    box-shadow: -18px 8px 26px -18px oklch(0.2 0.05 315 / 50%);
+  }
+  100% {
+    box-shadow: 0 0 0 transparent;
+    transform: rotateY(-180deg);
+  }
+}
+
+@keyframes life-page-back {
+  0% {
+    box-shadow: 0 0 0 transparent;
+    transform: rotateY(0deg);
+  }
+  45% {
+    box-shadow: 18px 8px 26px -18px oklch(0.2 0.05 315 / 50%);
+  }
+  100% {
+    box-shadow: 0 0 0 transparent;
+    transform: rotateY(180deg);
+  }
+}
+
+@media (max-width: 470px) {
+  .life-book-open {
+    display: block;
+    min-height: 0;
+  }
+
+  .life-book-index {
+    border-right: 0;
+    border-bottom: 1px solid oklch(0.36 0.04 315 / 13%);
+    padding: 0.8rem 0.7rem 0.65rem;
+  }
+
+  .life-book-index .eyebrow {
+    display: none;
+  }
+
+  .life-book-index .mt-3 {
+    margin-top: 0;
+  }
+
+  .life-book-index-item {
+    width: auto;
+    min-width: 82px;
+    border-bottom: 2px solid transparent;
+    border-left: 0;
+    padding: 0.35rem 0.45rem;
+  }
+
+  .life-book-index-item:hover,
+  .life-book-index-item.is-active {
+    border-bottom-color: var(--primary);
+    border-left-color: transparent;
+  }
+
+  .life-book-page-intro {
+    display: none;
+  }
+
+  .life-book-page-chapter {
+    min-height: 450px;
+    padding: 2rem 1.35rem 2.8rem;
+  }
+}
+
+.one-on-one-scene.is-bridge .cupid-character,
+.one-on-one-scene.is-bridge .love-arrow {
+  opacity: 0;
+  animation: none;
+}
+.one-on-one-scene.is-bridge .traveler-me,
+.one-on-one-scene.is-bridge .traveler-them {
+  animation: none;
+  transform: translateY(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cupid-character,
+  .love-arrow,
+  .traveler-me,
+  .traveler-them,
+  .bridge-water,
+  .life-book-page-chapter {
+    animation: none;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    background: var(--background);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: "Noto Serif SC", "Songti SC", "STSong", serif;
+    font-kerning: normal;
+    line-height: 1.65;
+    /* 纸张纤维：低对比度，避免纯色背景显得空 */
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 3px, oklch(0.3 0.04 300 / 1.5%) 3px 4px),
+      repeating-linear-gradient(90deg, transparent 0 5px, oklch(0.3 0.04 300 / 1%) 5px 6px),
+      linear-gradient(110deg, oklch(0.98 0.008 88), oklch(0.95 0.018 82));
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  button,
+  input,
+  textarea {
+    letter-spacing: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+
+  ::selection {
+    background: oklch(0.9 0.05 298);
+  }
+}
+
+@layer utilities {
+  /* 浅底糖针点缀（更稀疏、更淡） */
+  .starfield {
+    background-image:
+      radial-gradient(1.5px 1.5px at 15% 18%, oklch(0.72 0.08 350 / 35%) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 35% 65%, oklch(0.7 0.07 300 / 32%) 50%, transparent 51%),
+      radial-gradient(2px 2px at 58% 12%, oklch(0.74 0.1 95 / 42%) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 78% 45%, oklch(0.72 0.08 350 / 32%) 50%, transparent 51%),
+      radial-gradient(2px 2px at 90% 78%, oklch(0.74 0.1 95 / 38%) 50%, transparent 51%),
+      radial-gradient(1.5px 1.5px at 8% 82%, oklch(0.7 0.07 300 / 32%) 50%, transparent 51%),
+      radial-gradient(2px 2px at 65% 92%, oklch(0.72 0.07 235 / 35%) 50%, transparent 51%);
+  }
+
+  .font-display {
+    font-family: var(--font-display);
+    font-variation-settings: "opsz" 48;
+  }
+
+  .app-canvas {
+    position: relative;
+    overflow: hidden;
+    background:
+      linear-gradient(
+        90deg,
+        transparent 0 3.75rem,
+        oklch(0.42 0.04 315 / 8%) 3.75rem 3.8rem,
+        transparent 3.8rem
+      ),
+      color-mix(in oklab, var(--background) 93%, white);
+    box-shadow:
+      0 0 0 1px oklch(0.36 0.04 315 / 7%),
+      0 24px 80px -50px oklch(0.25 0.05 315 / 35%);
+  }
+
+  .app-canvas::before {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    content: "";
+    opacity: 0.32;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent 0 31px,
+      oklch(0.45 0.03 315 / 4%) 31px 32px
+    );
+  }
+
+  .app-nav {
+    border-color: oklch(0.36 0.04 315 / 14%);
+    background: color-mix(in oklab, var(--card) 88%, var(--background));
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 70%) inset,
+      0 18px 44px -22px oklch(0.25 0.05 315 / 32%);
+  }
+
+  /* 柔光斑：卡片封面上的浪漫弥散光点 */
+  .bokeh {
+    background-image:
+      radial-gradient(closest-side, oklch(1 0 0 / 55%), transparent),
+      radial-gradient(closest-side, oklch(0.9 0.09 350 / 45%), transparent),
+      radial-gradient(closest-side, oklch(0.93 0.06 95 / 42%), transparent),
+      radial-gradient(closest-side, oklch(0.88 0.06 300 / 40%), transparent);
+    background-size:
+      170px 170px,
+      130px 130px,
+      210px 210px,
+      150px 150px;
+    background-position:
+      12% 16%,
+      82% 10%,
+      62% 78%,
+      88% 60%;
+    background-repeat: no-repeat;
+  }
+
+  /* 浪漫渐变底：樱粉 → 薰衣草 → 暖杏 */
+  .romance-gradient {
+    background-image: linear-gradient(
+      150deg,
+      oklch(0.955 0.03 350),
+      oklch(0.935 0.035 300) 52%,
+      oklch(0.955 0.04 95)
+    );
+  }
+
+  /* 编辑级小眉标：大写字距微标签 */
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  /* 编辑标题使用单色墨色，避免整页都像渐变海报 */
+  .gradient-text {
+    color: var(--primary);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 24px oklch(0.7 0.12 295 / 30%);
+  }
+
+  /* 白卡片：细发丝描边 + 弥散柔影 */
+  .dreamy-card {
+    position: relative;
+    border-radius: 1.18rem;
+    border: 1px solid oklch(0.36 0.04 315 / 14%);
+    background: color-mix(in oklab, var(--card) 93%, var(--background));
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 75%) inset,
+      0 1px 2px oklch(0.4 0.04 315 / 5%),
+      0 20px 42px -28px oklch(0.34 0.05 315 / 26%);
+  }
+
+  .dreamy-card-hover {
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s,
+      border-color 0.35s;
+  }
+
+  .dreamy-card-hover:hover {
+    transform: translateY(-4px);
+    border-color: oklch(0.82 0.05 295);
+    box-shadow:
+      0 2px 6px -2px oklch(0.4 0.04 295 / 6%),
+      0 24px 52px -26px oklch(0.5 0.1 295 / 28%);
+  }
+
+  /* 主按钮：墨紫胶囊，克制投影 */
+  .btn-starlight {
+    background: oklch(0.29 0.04 315);
+    color: oklch(0.98 0.01 90);
+    letter-spacing: 0;
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 16%) inset,
+      0 10px 22px -12px oklch(0.26 0.05 315 / 52%);
+    transition:
+      transform 0.25s,
+      box-shadow 0.25s,
+      filter 0.25s;
+  }
+
+  .btn-starlight:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 18%) inset,
+      0 14px 28px -12px oklch(0.26 0.05 315 / 58%);
+  }
+
+  .btn-starlight:active {
+    transform: translateY(0) scale(0.98);
+  }
+}
