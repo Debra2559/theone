@@ -1263,6 +1263,73 @@
       0 18px 44px -22px oklch(0.25 0.05 315 / 32%);
   }
 
+  .match-page {
+    min-height: 0;
+  }
+
+  .match-card {
+    border-right: 0;
+    border-left: 0;
+    border-radius: 0.9rem;
+    background: color-mix(in oklab, var(--card) 96%, var(--background));
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 76%) inset,
+      0 24px 58px -34px oklch(0.25 0.05 315 / 42%);
+  }
+
+  .match-cover {
+    height: clamp(24rem, 68dvh, 38rem);
+    min-height: 23rem;
+    padding: 2rem 2rem 1.75rem;
+  }
+
+  .match-cover > img,
+  .match-cover > span {
+    max-height: none;
+    max-width: none;
+  }
+
+  .match-cover h2 {
+    font-size: clamp(2.2rem, 8vw, 3.6rem);
+  }
+
+  .match-cover p {
+    font-size: 1rem;
+  }
+
+  .match-profile-content {
+    padding: 2rem 2rem 8rem;
+  }
+
+  .match-profile-content > section > p:not(.eyebrow) {
+    font-size: 1.02rem;
+  }
+
+  .match-profile-content .eyebrow {
+    font-size: 0.66rem;
+  }
+
+  .match-profile-content .rounded-2xl {
+    border-radius: 0.75rem;
+  }
+
+  .match-card > .absolute.bottom-6 {
+    right: 1.5rem;
+    bottom: 1.5rem;
+    gap: 1rem;
+  }
+
+  .match-card > .absolute.bottom-6 button:first-child,
+  .match-card > .absolute.bottom-6 button:last-child {
+    height: 3.6rem !important;
+    width: 3.6rem !important;
+  }
+
+  .match-card > .absolute.bottom-6 button:nth-child(2) {
+    height: 4.6rem !important;
+    width: 4.6rem !important;
+  }
+
   .home-header {
     display: flex;
     align-items: flex-start;

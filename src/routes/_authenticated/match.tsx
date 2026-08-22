@@ -149,7 +149,7 @@ function Match() {
 
   return (
     <AppShell>
-      <div className="flex h-[calc(100dvh-9.5rem)] min-h-[540px] flex-col">
+      <div className="match-page flex h-[calc(100dvh-7.5rem)] min-h-[560px] flex-col">
         {/* 顶部：标题 + 进度 */}
         <div className="flex items-end justify-between">
           <div>
@@ -187,13 +187,13 @@ function Match() {
         {current ? (
           <div
             key={current.persona.id}
-            className="dreamy-card relative mt-4 min-h-0 flex-1 animate-in fade-in slide-in-from-bottom-4 overflow-hidden p-0 duration-500"
+            className="match-card dreamy-card relative -mx-5 mt-4 min-h-0 flex-1 animate-in fade-in slide-in-from-bottom-4 overflow-hidden p-0 duration-500"
           >
             {/* 卡片内部滚动区 */}
             <div ref={scrollRef} onScroll={onScroll} className="h-full overflow-y-auto">
               {/* 封面 */}
               <div
-                className={`relative flex h-[62%] min-h-[320px] flex-col justify-end overflow-hidden ${coverClass} p-5`}
+                className={`match-cover relative flex flex-col justify-end overflow-hidden ${coverClass}`}
               >
                 <div className="absolute inset-0 bg-background/15" />
                 <UserAvatar
@@ -230,7 +230,7 @@ function Match() {
               </div>
 
               {/* 资料区 */}
-              <div className="space-y-6 p-5 pb-28">
+              <div className="match-profile-content space-y-6 p-5 pb-28">
                 <section>
                   <p className="eyebrow text-primary">关于 TA</p>
                   <p className="mt-2 text-base font-semibold leading-relaxed">

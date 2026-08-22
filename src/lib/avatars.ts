@@ -47,11 +47,46 @@ export function avatarDataUri(v?: string | null): string | null {
 
 /* 挑名字池：好听的中性词作 seed，保证生成结果稳定好看 */
 const SEED_WORDS = [
-  "Mochi", "Luna", "Cookie", "Sunny", "Pudding", "Stella", "Milo", "Coco",
-  "Aurora", "Bubble", "Taro", "Peach", "Nova", "Muffin", "Soda", "Jupiter",
-  "Latte", "Willow", "Comet", "Berry", "Cloud", "Maple", "Dango", "Hazel",
-  "River", "Sakura", "Toast", "Mango", "Felix", "Oliver", "Leo", "Max",
-  "Charlie", "Jack", "Bella", "Chloe", "Ruby", "Zoe", "Mia", "Lily",
+  "Mochi",
+  "Luna",
+  "Cookie",
+  "Sunny",
+  "Pudding",
+  "Stella",
+  "Milo",
+  "Coco",
+  "Aurora",
+  "Bubble",
+  "Taro",
+  "Peach",
+  "Nova",
+  "Muffin",
+  "Soda",
+  "Jupiter",
+  "Latte",
+  "Willow",
+  "Comet",
+  "Berry",
+  "Cloud",
+  "Maple",
+  "Dango",
+  "Hazel",
+  "River",
+  "Sakura",
+  "Toast",
+  "Mango",
+  "Felix",
+  "Oliver",
+  "Leo",
+  "Max",
+  "Charlie",
+  "Jack",
+  "Bella",
+  "Chloe",
+  "Ruby",
+  "Zoe",
+  "Mia",
+  "Lily",
 ];
 
 const PICKER_STYLES: AvatarStyle[] = ["adventurer", "big-smile", "lorelei", "micah", "fun-emoji"];
@@ -67,4 +102,4 @@ export function avatarBatch(count = 10, offset = 0): string[] {
   return out;
 }
 
-export const DEFAULT_AVATAR = "db:adventurer:Mochi0";
+export const DEFAULT_AVATAR = "db:lorelei:Luna0";
