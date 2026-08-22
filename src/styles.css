@@ -1263,6 +1263,374 @@
       0 18px 44px -22px oklch(0.25 0.05 315 / 32%);
   }
 
+  .home-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .home-kicker {
+    color: var(--muted-foreground);
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+
+  .home-greeting {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.55rem;
+    color: var(--foreground);
+    font-family: var(--font-display);
+    font-size: 2.1rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .home-greeting span {
+    color: var(--muted-foreground);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .home-greeting strong {
+    font-weight: 600;
+  }
+
+  .home-avatar-link {
+    display: block;
+    padding: 0.25rem;
+    border: 1px solid oklch(0.36 0.04 315 / 18%);
+    border-radius: 50%;
+    background: oklch(1 0 0 / 36%);
+    box-shadow: 0 10px 24px -18px oklch(0.25 0.05 315 / 55%);
+    transition: transform 0.25s;
+  }
+
+  .home-avatar-link:hover {
+    transform: rotate(4deg) translateY(-2px);
+  }
+
+  .home-avatar-frame {
+    position: relative;
+    display: flex;
+    height: 3.2rem;
+    width: 3.2rem;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    border: 1px solid oklch(0.98 0.02 85 / 70%);
+    border-radius: 50%;
+    background: var(--blush);
+  }
+
+  .home-avatar-frame > img,
+  .home-avatar-frame > span {
+    display: block;
+    height: 100%;
+    max-height: 100%;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .manual-feature {
+    position: relative;
+    isolation: isolate;
+    min-height: 21rem;
+    border: 1px solid oklch(0.85 0.045 57 / 45%);
+    border-radius: 0.65rem 1.5rem 0.65rem 1.5rem;
+    background:
+      linear-gradient(135deg, oklch(0.29 0.04 315), oklch(0.37 0.075 315) 58%, oklch(0.43 0.08 35)),
+      var(--foreground);
+    color: oklch(0.97 0.02 85);
+    padding: 1.25rem 1.25rem 1.1rem;
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 20%) inset,
+      0 22px 45px -28px oklch(0.23 0.06 315 / 60%);
+  }
+
+  .manual-feature-grain {
+    opacity: 0.32;
+    background-image:
+      repeating-linear-gradient(0deg, transparent 0 4px, oklch(1 0 0 / 3%) 4px 5px),
+      radial-gradient(circle at 76% 24%, oklch(0.85 0.12 57 / 20%), transparent 24%),
+      radial-gradient(circle at 18% 82%, oklch(0.75 0.09 305 / 18%), transparent 28%);
+  }
+
+  .manual-feature-topline {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid oklch(0.97 0.02 85 / 24%);
+    padding-bottom: 0.7rem;
+    color: oklch(0.94 0.03 85 / 70%);
+    font-family: var(--font-sans);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+  }
+
+  .manual-feature-label {
+    display: inline-flex;
+    margin-top: 2.1rem;
+    border: 1px solid oklch(0.97 0.02 85 / 32%);
+    border-radius: 999px;
+    padding: 0.34rem 0.65rem;
+    color: oklch(0.96 0.03 85 / 90%);
+    font-family: var(--font-sans);
+    font-size: 0.63rem;
+    letter-spacing: 0.1em;
+  }
+
+  .manual-feature-percent {
+    margin-top: 0.65rem;
+    color: oklch(0.98 0.02 85);
+    font-family: var(--font-display);
+    font-size: 4.15rem;
+    font-weight: 500;
+    line-height: 0.95;
+  }
+
+  .manual-feature-percent span {
+    margin-left: 0.1rem;
+    color: oklch(0.84 0.08 57);
+    font-size: 1.8rem;
+  }
+
+  .manual-feature-copy {
+    margin-top: 0.5rem;
+    color: oklch(0.93 0.025 85 / 73%);
+    font-size: 0.77rem;
+  }
+
+  .manual-feature-progress {
+    position: relative;
+    z-index: 1;
+    height: 0.3rem;
+    margin-top: 1.35rem;
+    max-width: 18rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: oklch(0.98 0.02 85 / 22%);
+  }
+
+  .manual-feature-progress > div {
+    min-width: 0.7rem;
+    background: var(--accent);
+  }
+
+  .manual-feature-cta {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: 1.25rem;
+    border: 1px solid oklch(0.98 0.02 85 / 30%);
+    border-radius: 0.35rem;
+    background: oklch(0.98 0.02 85 / 11%);
+    padding: 0.65rem 0.8rem;
+    color: oklch(0.98 0.02 85);
+    font-family: var(--font-display);
+    font-size: 0.96rem;
+    transition:
+      background 0.25s,
+      transform 0.25s;
+  }
+
+  .manual-feature-cta:hover {
+    background: oklch(0.98 0.02 85 / 20%);
+    transform: translateY(-2px);
+  }
+
+  .manual-feature-fox {
+    display: block;
+    max-height: none;
+    max-width: none;
+    right: 0.25rem;
+    top: 2.8rem;
+    z-index: 1;
+    height: 10.5rem;
+    width: 10.5rem;
+    opacity: 0.72;
+    filter: saturate(0.8) contrast(1.04);
+    transform: rotate(6deg);
+  }
+
+  .manual-feature-orbit {
+    position: absolute;
+    z-index: 1;
+    border: 1px solid oklch(0.9 0.1 57 / 30%);
+    border-radius: 50%;
+    transform: rotate(-22deg);
+  }
+
+  .manual-feature-orbit-one {
+    right: -2.2rem;
+    top: 3rem;
+    height: 9rem;
+    width: 12rem;
+  }
+
+  .manual-feature-orbit-two {
+    right: -3.3rem;
+    top: 4.3rem;
+    height: 8rem;
+    width: 12rem;
+    opacity: 0.55;
+  }
+
+  .home-section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .home-section-title {
+    margin-top: 0.35rem;
+    color: var(--foreground);
+    font-family: var(--font-display);
+    font-size: 1.65rem;
+    font-weight: 600;
+    line-height: 1.1;
+  }
+
+  .home-test-count {
+    border-bottom: 1px solid var(--accent);
+    padding: 0.2rem 0.35rem;
+    color: var(--accent-foreground);
+    font-family: var(--font-sans);
+    font-size: 0.65rem;
+    font-weight: 600;
+  }
+
+  .home-test-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .home-test-card {
+    min-height: 11.7rem;
+    border: 1px solid oklch(0.36 0.04 315 / 15%);
+    border-radius: 0.55rem 1.15rem 0.55rem 1.15rem;
+    padding: 0.95rem;
+    box-shadow: 0 14px 28px -24px oklch(0.25 0.05 315 / 52%);
+    transition: box-shadow 0.25s;
+  }
+
+  .home-test-card:hover {
+    box-shadow: 0 20px 34px -24px oklch(0.25 0.05 315 / 66%);
+  }
+
+  .home-test-card-0 {
+    background: oklch(0.91 0.045 305);
+  }
+  .home-test-card-1 {
+    background: oklch(0.93 0.07 92);
+  }
+  .home-test-card-2 {
+    background: oklch(0.92 0.05 350);
+  }
+  .home-test-card-3 {
+    background: oklch(0.9 0.05 165);
+  }
+
+  .home-test-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .home-test-index {
+    color: oklch(0.34 0.04 315 / 62%);
+    font-family: var(--font-sans);
+    font-size: 0.58rem;
+    letter-spacing: 0.12em;
+  }
+
+  .home-test-done {
+    display: flex;
+    height: 1.7rem;
+    width: 1.7rem;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid oklch(0.98 0.02 85 / 40%);
+    border-radius: 50%;
+    background: var(--foreground);
+    color: var(--background);
+  }
+
+  .home-test-icon {
+    display: block;
+    margin-top: 1.15rem;
+    font-size: 1.85rem;
+    filter: saturate(0.78);
+  }
+
+  .home-test-name {
+    margin-top: 0.65rem;
+    color: var(--foreground);
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .home-test-desc {
+    min-height: 2.3rem;
+    margin-top: 0.2rem;
+    color: oklch(0.34 0.04 315 / 68%);
+    font-size: 0.67rem;
+    line-height: 1.7;
+  }
+
+  .home-test-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-top: 0.45rem;
+    color: oklch(0.34 0.04 315 / 68%);
+    font-family: var(--font-sans);
+    font-size: 0.58rem;
+  }
+
+  .home-counselor {
+    border-top: 1px solid oklch(0.36 0.04 315 / 17%);
+    border-bottom: 1px solid oklch(0.36 0.04 315 / 17%);
+    padding: 0.8rem 0.1rem;
+  }
+
+  .home-counselor-mark {
+    display: flex;
+    height: 3.65rem;
+    width: 3.65rem;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid oklch(0.62 0.1 57 / 42%);
+    border-radius: 50%;
+    background: oklch(0.92 0.05 57 / 45%);
+  }
+
+  .home-counselor-title {
+    margin-top: 0.15rem;
+    color: var(--foreground);
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+
+  .home-counselor-copy {
+    margin-top: 0.15rem;
+    color: var(--muted-foreground);
+    font-size: 0.67rem;
+  }
+
   /* 柔光斑：卡片封面上的浪漫弥散光点 */
   .bokeh {
     background-image:
