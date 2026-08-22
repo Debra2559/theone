@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as HackathonMatchRouteImport } from './routes/hackathon-match'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedCounselorRouteImport } from './routes/_authenticated/counselor'
+import { Route as AuthenticatedGameRouteImport } from './routes/_authenticated/game'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedManualRouteImport } from './routes/_authenticated/manual'
 import { Route as AuthenticatedMatchRouteImport } from './routes/_authenticated/match'
@@ -53,6 +54,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const AuthenticatedCounselorRoute = AuthenticatedCounselorRouteImport.update({
   id: '/counselor',
   path: '/counselor',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGameRoute = AuthenticatedGameRouteImport.update({
+  id: '/game',
+  path: '/game',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/hackathon-match': typeof HackathonMatchRoute
   '/reset-password': typeof ResetPasswordRoute
   '/counselor': typeof AuthenticatedCounselorRoute
+  '/game': typeof AuthenticatedGameRoute
   '/home': typeof AuthenticatedHomeRoute
   '/manual': typeof AuthenticatedManualRoute
   '/match': typeof AuthenticatedMatchRouteWithChildren
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/hackathon-match': typeof HackathonMatchRoute
   '/reset-password': typeof ResetPasswordRoute
   '/counselor': typeof AuthenticatedCounselorRoute
+  '/game': typeof AuthenticatedGameRoute
   '/home': typeof AuthenticatedHomeRoute
   '/manual': typeof AuthenticatedManualRoute
   '/match': typeof AuthenticatedMatchRouteWithChildren
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/hackathon-match': typeof HackathonMatchRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/counselor': typeof AuthenticatedCounselorRoute
+  '/_authenticated/game': typeof AuthenticatedGameRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/manual': typeof AuthenticatedManualRoute
   '/_authenticated/match': typeof AuthenticatedMatchRouteWithChildren
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/hackathon-match'
     | '/reset-password'
     | '/counselor'
+    | '/game'
     | '/home'
     | '/manual'
     | '/match'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/hackathon-match'
     | '/reset-password'
     | '/counselor'
+    | '/game'
     | '/home'
     | '/manual'
     | '/match'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/hackathon-match'
     | '/reset-password'
     | '/_authenticated/counselor'
+    | '/_authenticated/game'
     | '/_authenticated/home'
     | '/_authenticated/manual'
     | '/_authenticated/match'
@@ -268,6 +280,13 @@ declare module '@tanstack/react-router' {
       path: '/counselor'
       fullPath: '/counselor'
       preLoaderRoute: typeof AuthenticatedCounselorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/game': {
+      id: '/_authenticated/game'
+      path: '/game'
+      fullPath: '/game'
+      preLoaderRoute: typeof AuthenticatedGameRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/home': {
@@ -356,6 +375,7 @@ const AuthenticatedMatchRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedCounselorRoute: typeof AuthenticatedCounselorRoute
+  AuthenticatedGameRoute: typeof AuthenticatedGameRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedManualRoute: typeof AuthenticatedManualRoute
   AuthenticatedMatchRoute: typeof AuthenticatedMatchRouteWithChildren
@@ -368,6 +388,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCounselorRoute: AuthenticatedCounselorRoute,
+  AuthenticatedGameRoute: AuthenticatedGameRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedManualRoute: AuthenticatedManualRoute,
   AuthenticatedMatchRoute: AuthenticatedMatchRouteWithChildren,

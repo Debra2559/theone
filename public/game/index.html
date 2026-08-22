@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>恋爱时光机 · 玩着玩着就懂自己</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="bg-decor" aria-hidden="true"></div>
+
+<main class="app">
+
+  <!-- ==================== 封面 ==================== -->
+  <section id="screen-intro" class="screen">
+    <div class="hero">
+      <div class="logo">💞</div>
+      <h1>恋爱时光机</h1>
+      <p class="subtitle">没有问卷，只有相遇、相处与分岔路<br>12 个瞬间，玩着玩着，就认识了自己</p>
+    </div>
+
+    <div class="card intro-card">
+      <label class="field">
+        <span>先给这本说明书签个名</span>
+        <input id="nickname" type="text" maxlength="12" placeholder="你的昵称（可留空）" />
+      </label>
+      <div class="field">
+        <span>这趟旅程，你想遇见</span>
+        <div class="pref-switch" id="ta-pref">
+          <button type="button" data-pref="f" class="on">女生</button>
+          <button type="button" data-pref="m">男生</button>
+          <button type="button" data-pref="any">随缘</button>
+        </div>
+      </div>
+      <button class="btn primary big" onclick="App.start()">开始这趟旅程 →</button>
+      <p id="intro-me-tip" class="muted small"></p>
+      <p class="divider" id="intro-partner-tip"></p>
+    </div>
+
+    <div class="card mini">
+      <h3>🚂 沿途站点</h3>
+      <div class="stations">
+        <span>① 初识期</span><span>② 热恋期</span><span>③ 磨合期</span>
+        <span>④ 冲突期</span><span>⑤ 深水期</span>
+      </div>
+      <p class="muted small">每个选择都在悄悄描绘你的画像：沟通风格、关系模式、摩擦预警区……<br>玩完生成一份可以分享的「恋爱说明书」。</p>
+    </div>
+  </section>
+
+  <!-- ==================== 游戏中（情景对话） ==================== -->
+  <section id="screen-game" class="screen hidden">
+    <canvas id="scene-backdrop" aria-hidden="true"></canvas>
+    <div class="game-overlay">
+      <header class="game-header">
+        <div class="stage-chip" id="stage-chip">初识期</div>
+        <div class="progress">
+          <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
+          <span class="progress-text" id="progress-text">1 / 15</span>
+        </div>
+        <button class="btn ghost back-btn" id="btn-back" onclick="App.goBack()" disabled>⬅ 上一题</button>
+      </header>
+      <p class="stage-desc" id="stage-desc"></p>
+
+      <div class="dialogue-flow" id="dialogue-flow"></div>
+
+      <div class="choice-bar hidden" id="choice-bar"></div>
+
+      <div id="insight-toast" class="insight hidden">
+        <span id="insight-text"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 加载 ==================== -->
+  <section id="screen-loading" class="screen hidden">
+    <div class="loader"><div class="spinner"></div></div>
+    <p id="loading-text">正在为你生成「个人说明书」…</p>
+  </section>
+
+  <!-- ==================== 报告：个人说明书 ==================== -->
+  <section id="screen-report" class="screen hidden">
+    <div class="report-card">
+      <!-- 头部 -->
+      <div class="report-head">
+        <div class="avatar" id="r-arch-emoji">🌷</div>
+        <div class="report-head-text">
+          <p class="small muted" id="r-name">我</p>
+          <h1 id="r-arch-name">浪漫冒险家</h1>
+          <p class="tagline" id="r-tagline"></p>
+          <span class="substyle" id="r-substyle"></span>
+        </div>
+      </div>
+      <p id="r-paragraph" class="report-paragraph"></p>
+
+      <!-- 雷达图 -->
+      <h3 class="sec-title">📊 我的画像雷达</h3>
+      <div class="radar-wrap"><canvas id="radar"></canvas></div>
+      <div id="dim-bars" class="dim-bars"></div>
+
+      <!-- 沟通密码 -->
+      <h3 class="sec-title">🗝️ 我的沟通密码</h3>
+      <ul id="r-comm" class="nice-list"></ul>
+
+      <!-- 关系模式 -->
+      <h3 class="sec-title">🔗 我的关系模式</h3>
+      <ul id="r-pattern" class="nice-list"></ul>
+
+      <!-- 预警区 & 闪光点 -->
+      <div class="two-col">
+        <div>
+          <h3 class="sec-title warn">⚠️ 摩擦预警区</h3>
+          <ul id="r-friction" class="nice-list warn"></ul>
+        </div>
+        <div>
+          <h3 class="sec-title good">✨ 隐形闪光点</h3>
+          <ul id="r-strengths" class="nice-list good"></ul>
+        </div>
+      </div>
+
+      <!-- 成长建议 & 理想伴侣画像 -->
+      <h3 class="sec-title good">🌱 给 TA 的成长建议</h3>
+      <ul id="r-growth" class="nice-list good"></ul>
+
+      <h3 class="sec-title ai">💑 适合我的 TA</h3>
+      <div id="r-ideal" class="ideal-card"></div>
+
+      <!-- 预留接口②：心元大模型 -->
+      <h3 class="sec-title ai">🧠 心元大模型解读 <span class="tag-demo">接口预留</span></h3>
+      <div class="ai-card">
+        <button class="btn primary xinyuan-go" id="xinyuan-confirm" onclick="App.confirmXinyuan()">🔮 让心元大模型解读我的说明书</button>
+        <div id="xinyuan-scenes" class="scene-tabs">
+          <button data-scene="companionship" id="scene-companion">情感陪伴</button>
+          <button data-scene="fate" id="scene-fate">缘分测量</button>
+          <button data-scene="insight" id="scene-insight" class="active">人格洞察</button>
+        </div>
+        <p id="xinyuan-summary" class="ai-text">正在生成…</p>
+        <p id="xinyuan-tip" class="muted small"></p>
+        <details class="payload">
+          <summary>查看发送给心元大模型的请求体（契约）</summary>
+          <pre id="xinyuan-payload"></pre>
+        </details>
+      </div>
+
+      <!-- 预留接口①：缘分匹配 -->
+      <h3 class="sec-title ai">💞 缘分匹配 <span class="tag-demo">接口预留</span></h3>
+      <div id="compat-box" class="ai-card"></div>
+
+      <!-- 分享 & 数据 -->
+      <div class="actions">
+        <button class="btn primary" onclick="App.copyShare()">📤 分享我的说明书</button>
+        <button class="btn ghost" id="btn-goto-compat" onclick="App.showCompat()" style="display:none">👥 查看双人缘分报告</button>
+        <button class="btn ghost" onclick="App.start()">🔄 重新再玩一遍</button>
+      </div>
+
+      <details class="payload">
+        <summary>查看我的画像 JSON（供匹配算法 / 心元 API 消费）</summary>
+        <pre id="json-payload"></pre>
+      </details>
+
+      <p class="muted small center">《恋爱时光机》Demo · 画像由选择轨迹生成，报告可对接推荐算法匹配与心元大模型分析</p>
+    </div>
+  </section>
+
+  <!-- ==================== 双人缘分报告 ==================== -->
+  <section id="screen-compat" class="screen hidden">
+    <div class="report-card">
+      <h1 class="compat-title">💞 你们的缘分报告</h1>
+
+      <div class="compat-hero big">
+        <div class="score-badge">
+          <span class="score-num" id="c-score">--</span>
+          <span class="score-label">契合度</span>
+        </div>
+        <div class="compat-verdict">
+          <b id="c-verdict"></b>
+          <p class="muted" id="c-tip"></p>
+        </div>
+      </div>
+
+      <p class="players">
+        <span class="pill me" id="c-me">我</span> ↔
+        <span class="pill partner" id="c-partner">TA</span>
+      </p>
+
+      <h3 class="sec-title">📏 逐维度对照</h3>
+      <div id="c-compare" class="dim-compare"></div>
+
+      <div class="two-col">
+        <div>
+          <h3 class="sec-title good">✨ 互补亮点</h3>
+          <ul id="c-complement" class="nice-list good"></ul>
+        </div>
+        <div>
+          <h3 class="sec-title warn">⚠️ 需要留意的差异</h3>
+          <ul id="c-friction" class="nice-list warn"></ul>
+        </div>
+      </div>
+
+      <h3 class="sec-title ai">🔮 心元 · 缘分测量 <span class="tag-demo">接口预留</span></h3>
+      <p id="c-xinyuan" class="ai-text">点击下方按钮，让心元大模型测量你们的缘分。</p>
+      <button class="btn primary xinyuan-go" id="c-xinyuan-confirm" onclick="App.confirmFate()">🔮 让心元测量这段缘分</button>
+
+      <div class="actions">
+        <button class="btn primary" onclick="App.start()">我也再测一次</button>
+        <button class="btn ghost" onclick="App.startPartner()">换 TA 再测一次</button>
+      </div>
+      <p class="muted small center">契合度评估为 Demo 规则引擎结果 · 正式版将接入推荐算法与心元大模型</p>
+    </div>
+  </section>
+
+</main>
+
+<script src="js/scenarios.js"></script>
+<script src="js/scene-backdrop.js"></script>
+<script src="js/motifs.js"></script>
+<script src="js/dialogue.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/portrait.js"></script>
+<script src="js/analyzers.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

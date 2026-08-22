@@ -122,8 +122,8 @@ function Home() {
             return (
               <Link
                 key={t.id}
-                to="/tests/$testId"
-                params={{ testId: t.id }}
+                to={t.kind === "game" ? "/game" : "/tests/$testId"}
+                params={t.kind === "game" ? undefined : { testId: t.id }}
                 className={`home-test-card home-test-card-${i % 4} group relative overflow-hidden transition-transform hover:-translate-y-1 active:scale-[0.98]`}
               >
                 <div className="home-test-card-top">
