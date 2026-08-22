@@ -17,7 +17,6 @@ import { generateManual, getManual, getMyProfile, getTestResults } from "@/lib/a
 import { createThread } from "@/lib/counselor.functions";
 import { AppShell, RouteError } from "@/components/app-shell";
 import { SharePosterButton } from "@/components/poster-share";
-import { ShareRelationshipInvite } from "@/components/share-relationship-invite";
 import { UserAvatar } from "@/components/user-avatar";
 import { TESTS } from "@/lib/tests";
 
@@ -229,7 +228,6 @@ function Manual() {
         </div>
         {hasManual && (
           <div className="manual-actions flex flex-wrap gap-2">
-            <ShareRelationshipInvite />
             <SharePosterButton
               filename={`心动说明书-${profile?.nickname ?? "我"}.png`}
               data={{
@@ -332,7 +330,7 @@ function Manual() {
                 <div className="life-book-open">
                   <aside className="life-book-index">
                     <p className="eyebrow">Contents</p>
-                    <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1 lg:block lg:space-y-1.5">
+                    <div className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
                       {reportChapters.map((section, index) => (
                         <button
                           type="button"

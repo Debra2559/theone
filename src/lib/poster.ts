@@ -1,5 +1,6 @@
 import foxImg from "@/assets/fox.png";
 import { avatarDataUri } from "@/lib/avatars";
+import QRCode from "qrcode";
 
 /*
  * 海报渲染器：把个人说明书 / 关系说明书绘制成一张糖果风 PNG（Canvas2D）。
@@ -17,6 +18,7 @@ export type ManualPosterData = {
   oneLiner?: string | undefined;
   badges: string[];
   sections: PosterSection[];
+  inviteUrl?: string;
 };
 
 export type RelPosterData = {
@@ -80,7 +82,12 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, maxW: number): string
   return lines;
 }
 
-function wrapCap(ctx: CanvasRenderingContext2D, text: string, maxW: number, maxLines: number): string[] {
+function wrapCap(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxW: number,
+  maxLines: number,
+): string[] {
   const lines = wrap(ctx, text, maxW);
   if (lines.length <= maxLines) return lines;
   const kept = lines.slice(0, maxLines);
@@ -120,7 +127,12 @@ function paintBackground(ctx: CanvasRenderingContext2D, h: number) {
     ctx.fillStyle = g;
     ctx.fillRect(b.x - b.r, b.y - b.r, b.r * 2, b.r * 2);
   }
-  const dotColors = ["rgba(213,63,119,0.35)", "rgba(150,120,210,0.35)", "rgba(196,127,53,0.35)", "rgba(90,170,160,0.35)"];
+  const dotColors = [
+    "rgba(213,63,119,0.35)",
+    "rgba(150,120,210,0.35)",
+    "rgba(196,127,53,0.35)",
+    "rgba(90,170,160,0.35)",
+  ];
   for (let i = 0; i < 26; i++) {
     const x = (((i * 197 + 41) % 1000) / 1000) * W;
     const y = (((i * 389 + 77) % 1000) / 1000) * h;
@@ -146,7 +158,11 @@ function card(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h:
   ctx.stroke();
 }
 
-function drawHeader(ctx: CanvasRenderingContext2D, fox: HTMLImageElement | null, subtitle: string): number {
+function drawHeader(
+  ctx: CanvasRenderingContext2D,
+  fox: HTMLImageElement | null,
+  subtitle: string,
+): number {
   const y = 72;
   let tx = M;
   if (fox) {
@@ -197,7 +213,14 @@ function drawFooter(ctx: CanvasRenderingContext2D, y: number): number {
   return y + 150;
 }
 
-async function drawAvatar(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number, avatar: string, ring: string) {
+async function drawAvatar(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  r: number,
+  avatar: string,
+  ring: string,
+) {
   ctx.save();
   ctx.shadowColor = "rgba(90,80,140,0.18)";
   ctx.shadowBlur = 24;
@@ -234,7 +257,13 @@ async function drawAvatar(ctx: CanvasRenderingContext2D, cx: number, cy: number,
   ctx.textBaseline = "alphabetic";
 }
 
-function gradientText(ctx: CanvasRenderingContext2D, text: string, cx: number, baseline: number, size: number) {
+function gradientText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  cx: number,
+  baseline: number,
+  size: number,
+) {
   ctx.font = font(size, 700);
   const tw = ctx.measureText(text).width;
   const g = ctx.createLinearGradient(cx - tw / 2, 0, cx + tw / 2, 0);
@@ -284,7 +313,13 @@ function drawBadges(ctx: CanvasRenderingContext2D, badges: string[], y: number):
 }
 
 /* 板块白卡：icon + 标题 + 至多 2 条要点（每条至多 2 行），返回结束 y */
-function drawSectionCard(ctx: CanvasRenderingContext2D, icon: string, title: string, points: string[], y: number): number {
+function drawSectionCard(
+  ctx: CanvasRenderingContext2D,
+  icon: string,
+  title: string,
+  points: string[],
+  y: number,
+): number {
   const x = M;
   const w = W - 2 * M;
   const pad = 40;
@@ -320,7 +355,11 @@ function drawSectionCard(ctx: CanvasRenderingContext2D, icon: string, title: str
   return y + h + 28;
 }
 
-async function drawManual(ctx: CanvasRenderingContext2D, fox: HTMLImageElement | null, d: ManualPosterData): Promise<number> {
+async function drawManual(
+  ctx: CanvasRenderingContext2D,
+  fox: HTMLImageElement | null,
+  d: ManualPosterData,
+): Promise<number> {
   let y = drawHeader(ctx, fox, "我的专属使用说明书");
 
   await drawAvatar(ctx, W / 2, y + 72, 64, d.avatar || "✨", "rgba(213,63,119,0.45)");
@@ -364,10 +403,15 @@ async function drawManual(ctx: CanvasRenderingContext2D, fox: HTMLImageElement |
     ctx.fillText(`还有 ${rest} 个板块 · 打开 App 查看完整说明书`, W / 2, y + 22);
     y += 56;
   }
+  if (d.inviteUrl) y = await drawInviteQr(ctx, d.inviteUrl, y);
   return drawFooter(ctx, y);
 }
 
-async function drawRelationship(ctx: CanvasRenderingContext2D, fox: HTMLImageElement | null, d: RelPosterData): Promise<number> {
+async function drawRelationship(
+  ctx: CanvasRenderingContext2D,
+  fox: HTMLImageElement | null,
+  d: RelPosterData,
+): Promise<number> {
   let y = drawHeader(ctx, fox, "我们的关系说明书");
 
   // 双方头像 + 合拍指数
@@ -405,9 +449,47 @@ async function drawRelationship(ctx: CanvasRenderingContext2D, fox: HTMLImageEle
   y = drawSectionCard(ctx, "📜", "相处攻略", d.playbook, y);
 
   if (d.dateIdeas.length > 0) {
-    y = drawBadges(ctx, d.dateIdeas.slice(0, 3).map((s) => `🎡 ${s}`), y + 6);
+    y = drawBadges(
+      ctx,
+      d.dateIdeas.slice(0, 3).map((s) => `🎡 ${s}`),
+      y + 6,
+    );
   }
   return drawFooter(ctx, y);
+}
+
+async function drawInviteQr(
+  ctx: CanvasRenderingContext2D,
+  url: string,
+  y: number,
+): Promise<number> {
+  const qrDataUrl = await QRCode.toDataURL(url, {
+    errorCorrectionLevel: "M",
+    margin: 1,
+    width: 220,
+    color: { dark: INK, light: "#FFFFFF" },
+  });
+  const qr = await loadImage(qrDataUrl);
+  if (!qr) return y;
+
+  const x = M;
+  const w = W - 2 * M;
+  const h = 270;
+  card(ctx, x, y, w, h);
+  ctx.drawImage(qr, x + 34, y + 25, 220, 220);
+
+  ctx.textAlign = "left";
+  ctx.fillStyle = INK;
+  ctx.font = font(30, 600);
+  ctx.fillText("邀请朋友一起测一测", x + 292, y + 94);
+  ctx.fillStyle = MUTED;
+  ctx.font = font(24, 400);
+  const lines = wrapCap(ctx, "扫码完成测试，解锁你们的专属关系报告", 300, 3);
+  lines.forEach((line, index) => ctx.fillText(line, x + 292, y + 142 + index * 38));
+  ctx.fillStyle = PINK;
+  ctx.font = font(22, 500);
+  ctx.fillText("一起看看，为什么会遇见彼此", x + 292, y + 228);
+  return y + h + 28;
 }
 
 export async function renderPoster(data: PosterData): Promise<HTMLCanvasElement> {

@@ -96,7 +96,7 @@ function CounselorChat() {
 
   return (
     <AppShell>
-      <div className="mx-auto flex h-[calc(100dvh-9.5rem)] w-full flex-col">
+      <div className="counselor-chat-page mx-auto flex h-[calc(100dvh-7.25rem)] w-full flex-col">
         {/* 头部 */}
         <div className="flex items-center gap-3 pb-3">
           <button
