@@ -27,10 +27,9 @@ export const Route = createFileRoute("/_authenticated/home")({
         : undefined;
     return invite ? { invite } : {};
   },
-  loader: async () => {
+  loader: async ({ context }) => {
     const data = await getHomeData();
-    if (!data.profile?.onboarding_done) throw redirect({ to: "/onboarding" });
-    return data;
+    return { ...data, profile: context.profile };
   },
   errorComponent: RouteError,
   component: Home,

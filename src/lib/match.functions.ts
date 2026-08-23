@@ -156,10 +156,16 @@ export const getMatchCandidates = createServerFn({ method: "GET" })
       { data: personas },
       { data: existing },
     ] = await Promise.all([
-      context.supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
+      context.supabase
+        .from("profiles")
+        .select("nickname, gender, city")
+        .eq("id", uid)
+        .maybeSingle(),
       context.supabase.from("test_results").select("test_id, result").eq("user_id", uid),
       context.supabase.from("user_manuals").select("content").eq("user_id", uid).maybeSingle(),
-      context.supabase.from("personas").select("*"),
+      context.supabase
+        .from("personas")
+        .select("id, nickname, gender, age, city, avatar, tagline, tags, manual"),
       context.supabase.from("matches").select("id, persona_id, status").eq("user_id", uid),
     ]);
 
@@ -229,7 +235,11 @@ export const createMatch = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const [{ data: profile }, { data: results }, { data: manualRow }, { data: persona }] =
       await Promise.all([
-        context.supabase.from("profiles").select("*").eq("id", context.userId).maybeSingle(),
+        context.supabase
+          .from("profiles")
+          .select("nickname, city")
+          .eq("id", context.userId)
+          .maybeSingle(),
         context.supabase
           .from("test_results")
           .select("test_id, result")
@@ -239,7 +249,11 @@ export const createMatch = createServerFn({ method: "POST" })
           .select("content")
           .eq("user_id", context.userId)
           .maybeSingle(),
-        context.supabase.from("personas").select("*").eq("id", data.personaId).maybeSingle(),
+        context.supabase
+          .from("personas")
+          .select("id, nickname, gender, age, city, avatar, tagline, tags, manual")
+          .eq("id", data.personaId)
+          .maybeSingle(),
       ]);
     if (!persona) throw new Error("推荐对象不存在");
     const resultMap: Record<string, { label?: string }> = {};
@@ -284,7 +298,7 @@ export const listMyMatches = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("matches")
       .select(
-        "id, score, highlights, status, created_at, user_id, matched_user_id, persona_id, personas(nickname, avatar, tagline, age, city, bio, tags, manual)",
+        "id, score, highlights, status, created_at, user_id, matched_user_id, persona_id, personas(nickname, avatar, tagline, age, city, tags, manual)",
       )
       .or(`user_id.eq.${context.userId},matched_user_id.eq.${context.userId}`)
       .neq("status", "dismissed")

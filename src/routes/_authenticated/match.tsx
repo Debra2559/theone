@@ -18,7 +18,6 @@ import {
   RotateCcw,
   Loader2,
 } from "@/components/app-icons";
-import { getMyProfile } from "@/lib/app.functions";
 import { createMatch, getMatchCandidates } from "@/lib/match.functions";
 import { AppShell, RouteError } from "@/components/app-shell";
 import { UserAvatar } from "@/components/user-avatar";
@@ -35,8 +34,6 @@ export const Route = createFileRoute("/_authenticated/match")({
     ],
   }),
   loader: async () => {
-    const profile = await getMyProfile();
-    if (!profile?.onboarding_done) throw redirect({ to: "/onboarding" });
     return getMatchCandidates();
   },
   errorComponent: RouteError,

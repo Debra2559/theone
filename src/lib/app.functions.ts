@@ -20,7 +20,7 @@ export const getMyProfile = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data } = await context.supabase
       .from("profiles")
-      .select("*")
+      .select("id, nickname, gender, birth_date, birth_time, city, bio, avatar, onboarding_done")
       .eq("id", context.userId)
       .maybeSingle();
     return data;
@@ -62,7 +62,7 @@ export const getTestResults = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data } = await context.supabase
       .from("test_results")
-      .select("*")
+      .select("test_id, result")
       .eq("user_id", context.userId);
     return data ?? [];
   });
@@ -116,7 +116,7 @@ export const getManual = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data } = await context.supabase
       .from("user_manuals")
-      .select("*")
+      .select("content")
       .eq("user_id", context.userId)
       .maybeSingle();
     return data;
@@ -126,8 +126,12 @@ export const generateManual = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const [{ data: profile }, { data: results }] = await Promise.all([
-      context.supabase.from("profiles").select("*").eq("id", context.userId).maybeSingle(),
-      context.supabase.from("test_results").select("*").eq("user_id", context.userId),
+      context.supabase
+        .from("profiles")
+        .select("nickname, gender, city, bio")
+        .eq("id", context.userId)
+        .maybeSingle(),
+      context.supabase.from("test_results").select("test_id, result").eq("user_id", context.userId),
     ]);
     if (!results || results.length === 0) {
       throw new Error("先完成至少一个测试，才能生成你的说明书哦");
@@ -275,19 +279,16 @@ export const getHomeData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const uid = context.userId;
-    const [{ data: profile }, { data: results }, { data: manual }, { data: matches }] =
-      await Promise.all([
-        context.supabase.from("profiles").select("*").eq("id", uid).maybeSingle(),
-        context.supabase.from("test_results").select("test_id, result").eq("user_id", uid),
-        context.supabase.from("user_manuals").select("user_id").eq("user_id", uid).maybeSingle(),
-        context.supabase
-          .from("matches")
-          .select("id, score, status, created_at, persona_id, personas(nickname, avatar, tagline)")
-          .order("created_at", { ascending: false })
-          .limit(4),
-      ]);
+    const [{ data: results }, { data: manual }, { data: matches }] = await Promise.all([
+      context.supabase.from("test_results").select("test_id, result").eq("user_id", uid),
+      context.supabase.from("user_manuals").select("user_id").eq("user_id", uid).maybeSingle(),
+      context.supabase
+        .from("matches")
+        .select("id, score, status, created_at, persona_id, personas(nickname, avatar, tagline)")
+        .order("created_at", { ascending: false })
+        .limit(4),
+    ]);
     return {
-      profile,
       testCount: results?.length ?? 0,
       testIds: (results ?? []).map((r) => r.test_id),
       hasManual: !!manual,

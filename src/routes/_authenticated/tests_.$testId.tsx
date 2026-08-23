@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound, redirect, useNavigate } from "@tanstac
 import { useState } from "react";
 import { toast } from "sonner";
 import { Loader2, RotateCcw, ArrowLeft, BookOpen } from "@/components/app-icons";
-import { generateManual, getMyProfile, saveTestResult } from "@/lib/app.functions";
+import { generateManual, saveTestResult } from "@/lib/app.functions";
 import { AppShell, RouteError } from "@/components/app-shell";
 import { TESTS, getTest, scoreQuiz, computeZodiac, computeBazi } from "@/lib/tests";
 
@@ -24,11 +24,11 @@ export const Route = createFileRoute("/_authenticated/tests_/$testId")({
         : undefined;
     return invite ? { invite } : {};
   },
-  loader: async ({ params }) => {
+  loader: async ({ context, params }) => {
     const test = getTest(params.testId);
     if (!test) throw notFound();
     if (test.kind === "game") throw redirect({ to: "/game" }); // 剧场类测试走独立游戏页
-    const profile = await getMyProfile();
+    const profile = context.profile;
     if (!profile?.onboarding_done) throw redirect({ to: "/onboarding" });
     return { test, birthDate: profile.birth_date ?? null };
   },

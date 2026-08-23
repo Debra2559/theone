@@ -1,8 +1,8 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate, useRouter } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Loader2, RefreshCw } from "@/components/app-icons";
-import { getMyProfile, saveProfile } from "@/lib/app.functions";
+import { saveProfile } from "@/lib/app.functions";
 import { avatarBatch, DEFAULT_AVATAR } from "@/lib/avatars";
 import { UserAvatar } from "@/components/user-avatar";
 import foxImg from "@/assets/fox.png";
@@ -27,8 +27,8 @@ export const Route = createFileRoute("/_authenticated/onboarding")({
     return { ...(edit ? { edit: true } : {}), ...(invite ? { invite } : {}) };
   },
   loaderDeps: ({ search }) => ({ edit: search.edit, invite: search.invite }),
-  loader: async ({ deps }) => {
-    const profile = await getMyProfile();
+  loader: async ({ context, deps }) => {
+    const profile = context.profile;
     if (profile?.onboarding_done && !deps.edit) throw redirect({ to: "/home" });
     return profile;
   },
@@ -43,6 +43,7 @@ const GENDERS = [
 
 function Onboarding() {
   const navigate = useNavigate();
+  const router = useRouter();
   const profile = Route.useLoaderData();
   const { edit, invite } = Route.useSearch();
   const [nickname, setNickname] = useState(profile?.nickname ?? "");
@@ -77,6 +78,7 @@ function Onboarding() {
         },
       });
       toast.success(edit ? "资料已更新 ✨" : "资料保存好啦，欢迎入住小镇 ✨");
+      await router.invalidate();
       if (invite) {
         navigate({ to: "/invite/$token", params: { token: invite } });
       } else {

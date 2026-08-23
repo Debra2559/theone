@@ -9,7 +9,10 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
-    defaultPreloadStaleTime: 0,
+    // Tab navigation should reuse the data just loaded instead of firing the
+    // same server functions again for every hover/click.
+    defaultStaleTime: 30_000,
+    defaultPreloadStaleTime: 30_000,
   });
 
   return router;

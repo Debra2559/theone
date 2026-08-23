@@ -13,7 +13,6 @@ import {
   Sparkles,
   Trash2,
 } from "@/components/app-icons";
-import { getMyProfile } from "@/lib/app.functions";
 import { createThread, deleteThread, listThreads } from "@/lib/counselor.functions";
 import { listMyMatches } from "@/lib/match.functions";
 import { AppShell, RouteError } from "@/components/app-shell";
@@ -41,8 +40,6 @@ export const Route = createFileRoute("/_authenticated/counselor")({
     ],
   }),
   loader: async () => {
-    const profile = await getMyProfile();
-    if (!profile?.onboarding_done) throw redirect({ to: "/onboarding" });
     const [threads, matches] = await Promise.all([listThreads(), listMyMatches()]);
     return { threads, matches };
   },

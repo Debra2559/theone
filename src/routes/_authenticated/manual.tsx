@@ -12,7 +12,7 @@ import {
   MessageCircleHeart,
   Sparkles,
 } from "@/components/app-icons";
-import { generateManual, getManual, getMyProfile, getTestResults } from "@/lib/app.functions";
+import { generateManual, getManual, getTestResults } from "@/lib/app.functions";
 import { createThread } from "@/lib/counselor.functions";
 import { AppShell, RouteError } from "@/components/app-shell";
 import { SharePosterButton } from "@/components/poster-share";
@@ -45,9 +45,8 @@ export const Route = createFileRoute("/_authenticated/manual")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  loader: async () => {
-    const profile = await getMyProfile();
-    if (!profile?.onboarding_done) throw redirect({ to: "/onboarding" });
+  loader: async ({ context }) => {
+    const profile = context.profile;
     const [manualRow, results] = await Promise.all([getManual(), getTestResults()]);
     return { profile, manualRow, results };
   },

@@ -18,10 +18,9 @@ export const Route = createFileRoute("/_authenticated/profile")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  loader: async () => {
+  loader: async ({ context }) => {
     const data = await getHomeData();
-    if (!data.profile?.onboarding_done) throw redirect({ to: "/onboarding" });
-    return data;
+    return { ...data, profile: context.profile };
   },
   errorComponent: RouteError,
   component: Profile,
@@ -62,7 +61,9 @@ function Profile() {
       {/* 资料卡 */}
       <section className="relative mt-5 overflow-hidden rounded-3xl border border-foreground/5 bg-gradient-to-br from-candy-pink via-candy-peach/70 to-candy-lilac p-6">
         <div className="bokeh pointer-events-none absolute inset-0" />
-        <span aria-hidden className="animate-twinkle absolute right-24 top-6 text-xs text-rose">✦</span>
+        <span aria-hidden className="animate-twinkle absolute right-24 top-6 text-xs text-rose">
+          ✦
+        </span>
         <img
           src={foxImg}
           alt=""
@@ -76,7 +77,9 @@ function Profile() {
           <div className="min-w-0">
             <h2 className="truncate font-display text-2xl font-semibold">
               {profile?.nickname}
-              {myAge && <span className="ml-2 text-base font-normal text-foreground/60">{myAge}岁</span>}
+              {myAge && (
+                <span className="ml-2 text-base font-normal text-foreground/60">{myAge}岁</span>
+              )}
             </h2>
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-foreground/60">
               <span>{GENDER_LABEL[profile?.gender ?? "secret"]}</span>

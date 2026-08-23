@@ -2,7 +2,6 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Loader2, MessageCircleHeart, ArrowLeft, Sparkles } from "@/components/app-icons";
-import { getMyProfile } from "@/lib/app.functions";
 import { generateRelationshipManual, getMatch } from "@/lib/match.functions";
 import { createThread } from "@/lib/counselor.functions";
 import { AppShell, RouteError } from "@/components/app-shell";
@@ -20,9 +19,8 @@ export const Route = createFileRoute("/_authenticated/match_/$matchId")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  loader: async ({ params }) => {
-    const profile = await getMyProfile();
-    if (!profile?.onboarding_done) throw redirect({ to: "/onboarding" });
+  loader: async ({ context, params }) => {
+    const profile = context.profile;
     const match = await getMatch({ data: { matchId: params.matchId } });
     return { profile, match };
   },

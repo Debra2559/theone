@@ -2,7 +2,7 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, BookOpen, Loader2, Sparkles } from "@/components/app-icons";
-import { generateManual, getMyProfile, saveTestResult } from "@/lib/app.functions";
+import { generateManual, saveTestResult } from "@/lib/app.functions";
 import { avatarDataUri } from "@/lib/avatars";
 import { loveGameMessageSchema, type LoveGamePayload } from "@/lib/love-game-schema";
 
@@ -28,9 +28,8 @@ export const Route = createFileRoute("/_authenticated/game")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  loader: async () => {
-    const profile = await getMyProfile();
-    if (!profile?.onboarding_done) throw redirect({ to: "/onboarding" });
+  loader: async ({ context }) => {
+    const profile = context.profile;
     return { profile };
   },
   component: GamePage,

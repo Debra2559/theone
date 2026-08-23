@@ -5,7 +5,6 @@ import { DefaultChatTransport, type UIMessage } from "ai";
 import { toast } from "sonner";
 import { ArrowLeft, ChevronRight, X } from "@/components/app-icons";
 import { supabase } from "@/integrations/supabase/client";
-import { getMyProfile } from "@/lib/app.functions";
 import { getThreadData, linkThreadMatch, listMatchOptions } from "@/lib/counselor.functions";
 import { AppShell, RouteError } from "@/components/app-shell";
 import {
@@ -35,9 +34,8 @@ export const Route = createFileRoute("/_authenticated/counselor_/$threadId")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  loader: async ({ params }) => {
-    const profile = await getMyProfile();
-    if (!profile?.onboarding_done) throw redirect({ to: "/onboarding" });
+  loader: async ({ context, params }) => {
+    const profile = context.profile;
     const [threadData, matchOptions] = await Promise.all([
       getThreadData({ data: { threadId: params.threadId } }),
       listMatchOptions(),

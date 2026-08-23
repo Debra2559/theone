@@ -1,4 +1,4 @@
-import { createFileRoute, Link, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -9,7 +9,6 @@ import {
   MessageCircleHeart,
   Sparkles,
 } from "@/components/app-icons";
-import { getMyProfile } from "@/lib/app.functions";
 import { createMatch, generateRelationshipManual, getMatchCandidates } from "@/lib/match.functions";
 import { clearOneOnOneLock, getOneOnOneLock, setOneOnOneLock } from "@/lib/one-on-one";
 import { AppShell } from "@/components/app-shell";
@@ -23,12 +22,10 @@ export const Route = createFileRoute("/_authenticated/match/1v1")({
       { name: "description", content: "把一次心动，变成只属于你们两个人的相遇。" },
     ],
   }),
-  loader: async () => {
-    const profile = await getMyProfile();
-    if (!profile?.onboarding_done) throw redirect({ to: "/onboarding" });
+  loader: async ({ context }) => {
     const result = await getMatchCandidates();
     return {
-      profile,
+      profile: context.profile,
       candidate: result.candidates.find((item) => !item.matched) ?? result.candidates[0] ?? null,
     };
   },

@@ -19,7 +19,9 @@ export const listThreads = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("counselor_threads")
-      .select("*, matches(id, personas(nickname, avatar))")
+      .select(
+        "id, title, context_type, situation, match_id, updated_at, created_at, matches(id, personas(nickname, avatar))",
+      )
       .eq("user_id", context.userId)
       .order("updated_at", { ascending: false });
     if (error) throw new Error(error.message);
@@ -33,7 +35,8 @@ export const listThreads = createServerFn({ method: "GET" })
         "thread_id",
         threads.map((thread) => thread.id),
       )
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(100);
 
     const previews = new Map<string, { text: string; createdAt: string }>();
     for (const message of messages ?? []) {
@@ -83,7 +86,7 @@ export const listMatchOptions = createServerFn({ method: "GET" })
     const { data, error } = await context.supabase
       .from("matches")
       .select(
-        "id, score, highlights, relationship_manual, status, user_id, matched_user_id, personas(nickname, avatar, tagline, age, city, bio, tags, manual)",
+        "id, score, highlights, relationship_manual, status, user_id, matched_user_id, personas(nickname, avatar, tagline, age, city, tags, manual)",
       )
       .or(`user_id.eq.${context.userId},matched_user_id.eq.${context.userId}`)
       .neq("status", "dismissed")

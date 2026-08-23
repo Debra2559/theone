@@ -74,6 +74,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   <Link
                     key={to}
                     to={to}
+                    preload="intent"
+                    preloadDelay={80}
                     aria-label={label}
                     className={`flex flex-1 flex-col items-center justify-center gap-[3px] rounded-full py-2 transition-all duration-300 active:scale-95 ${
                       active ? "bg-primary/10" : "hover:bg-primary/5"
