@@ -2127,6 +2127,197 @@
     padding-left: 0.15rem;
   }
 
+  .counselor-context-picker {
+    position: relative;
+    padding: 0 0.15rem 0.55rem;
+  }
+
+  .counselor-mention-trigger,
+  .counselor-change-match {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 1.9rem;
+    border: 1px solid color-mix(in oklab, var(--primary) 18%, var(--border));
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--card) 78%, var(--background));
+    padding: 0.28rem 0.58rem;
+    color: var(--muted-foreground);
+    font-family: var(--font-sans);
+    font-size: 0.72rem;
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease,
+      color 160ms ease,
+      transform 160ms ease;
+  }
+
+  .counselor-mention-trigger:hover,
+  .counselor-change-match:hover {
+    border-color: color-mix(in oklab, var(--primary) 42%, var(--border));
+    background: color-mix(in oklab, var(--primary) 8%, var(--card));
+    color: var(--foreground);
+  }
+
+  .counselor-mention-trigger:active,
+  .counselor-change-match:active {
+    transform: translateY(1px);
+  }
+
+  .counselor-mention-trigger:disabled,
+  .counselor-change-match:disabled,
+  .counselor-match-option:disabled {
+    cursor: wait;
+    opacity: 0.58;
+  }
+
+  .counselor-mention-symbol {
+    display: inline-grid;
+    width: 1.15rem;
+    height: 1.15rem;
+    place-items: center;
+    border-radius: 0.35rem;
+    background: color-mix(in oklab, var(--primary) 14%, var(--card));
+    color: var(--primary);
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .counselor-linked-match {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+    border: 1px solid color-mix(in oklab, var(--accent) 22%, var(--border));
+    border-radius: 999px;
+    background: color-mix(in oklab, var(--accent) 8%, var(--card));
+    padding: 0.2rem 0.3rem 0.2rem 0.25rem;
+  }
+
+  .counselor-linked-match > span {
+    display: grid;
+    min-width: 0;
+    line-height: 1.05;
+  }
+
+  .counselor-linked-match small {
+    color: var(--muted-foreground);
+    font-size: 0.55rem;
+  }
+
+  .counselor-linked-match strong {
+    max-width: 7rem;
+    overflow: hidden;
+    color: var(--foreground);
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .counselor-change-match {
+    border-color: transparent;
+    background: transparent;
+    padding-right: 0.35rem;
+    padding-left: 0.35rem;
+    color: var(--muted-foreground);
+    font-size: 0.68rem;
+  }
+
+  .counselor-match-picker {
+    position: absolute;
+    right: 0.15rem;
+    bottom: calc(100% - 0.15rem);
+    left: 0.15rem;
+    z-index: 5;
+    border: 1px solid color-mix(in oklab, var(--foreground) 12%, var(--border));
+    border-radius: 0.9rem;
+    background: color-mix(in oklab, var(--card) 96%, var(--background));
+    padding: 0.75rem;
+    box-shadow:
+      0 1px 0 oklch(1 0 0 / 78%) inset,
+      0 18px 38px -24px oklch(0.25 0.05 315 / 55%);
+    animation: counselor-picker-in 160ms ease-out both;
+  }
+
+  .counselor-match-option {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    min-height: 3rem;
+    width: 100%;
+    border: 1px solid transparent;
+    border-radius: 0.72rem;
+    background: color-mix(in oklab, var(--background) 45%, transparent);
+    padding: 0.38rem 0.45rem;
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease;
+  }
+
+  .counselor-match-option:hover,
+  .counselor-match-option.is-active {
+    border-color: color-mix(in oklab, var(--primary) 24%, var(--border));
+    background: color-mix(in oklab, var(--primary) 8%, var(--card));
+  }
+
+  .counselor-match-option > span:nth-child(2) {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .counselor-match-option strong {
+    overflow: hidden;
+    color: var(--foreground);
+    font-family: var(--font-display);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .counselor-match-option small {
+    overflow: hidden;
+    color: var(--muted-foreground);
+    font-size: 0.63rem;
+    text-align: left;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .counselor-match-score {
+    flex: none;
+    color: var(--primary);
+    font-family: var(--font-display);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .counselor-match-option,
+    .counselor-mention-trigger,
+    .counselor-change-match,
+    .counselor-match-picker {
+      animation: none;
+      transition: none;
+    }
+  }
+
+  @keyframes counselor-picker-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.35rem);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
   .counselor-prompt [data-slot="input-group"] {
     border-color: oklch(0.36 0.04 315 / 17%);
     border-radius: 1rem;

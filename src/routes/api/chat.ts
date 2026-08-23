@@ -1,9 +1,51 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { convertToModelMessages, streamText, type UIMessage } from "ai";
+import { z } from "zod";
 import { getGateway } from "@/lib/ai.server";
 
-type ChatBody = { messages?: unknown; threadId?: unknown };
+type ChatBody = { messages?: unknown; threadId?: unknown; relatedMatchId?: unknown };
+
+async function loadMatchContext(supabase: SupabaseClient, userId: string, matchId: string) {
+  if (!matchId) return null;
+
+  const { data: matchRow } = await supabase
+    .from("matches")
+    .select(
+      "score, highlights, relationship_manual, user_id, matched_user_id, personas(nickname, gender, age, city, tagline, tags, manual, bio, avatar)",
+    )
+    .eq("id", matchId)
+    .or(`user_id.eq.${userId},matched_user_id.eq.${userId}`)
+    .neq("status", "dismissed")
+    .maybeSingle();
+  if (!matchRow) return null;
+
+  let persona = matchRow.personas;
+  if (!persona) {
+    const partnerId = matchRow.user_id === userId ? matchRow.matched_user_id : matchRow.user_id;
+    if (!partnerId) return null;
+    const [{ data: profile }, { data: manualRow }, { data: results }] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", partnerId).maybeSingle(),
+      supabase.from("user_manuals").select("content").eq("user_id", partnerId).maybeSingle(),
+      supabase.from("test_results").select("test_id, result").eq("user_id", partnerId),
+    ]);
+    if (!profile) return null;
+    persona = {
+      ...profile,
+      manual: manualRow?.content ?? {},
+      testResults: Object.fromEntries((results ?? []).map((item) => [item.test_id, item.result])),
+    };
+  }
+
+  return {
+    match: {
+      score: matchRow.score,
+      highlights: matchRow.highlights,
+      relationship_manual: matchRow.relationship_manual,
+    },
+    persona,
+  };
+}
 
 function buildSystemPrompt(input: {
   nickname: string;
@@ -27,15 +69,15 @@ function buildSystemPrompt(input: {
     ? `\n\n用户的个人说明书：\n${JSON.stringify(input.manual)}`
     : "\n\n（用户还没有生成个人说明书，可以建议 TA 先去做测试生成）";
 
-  if (input.contextType === "match" && input.persona) {
+  if (input.match && input.persona) {
     return `${base}${manualBlock}
 
-当前对话主题：用户和匹配对象「${(input.persona as { nickname?: string }).nickname ?? "TA"}」之间的事。
+当前对话主题：用户主动关联了匹配对象「${(input.persona as { nickname?: string }).nickname ?? "TA"}」，现在要讨论你们两个人的事。
 对方的资料/说明书：${JSON.stringify(input.persona)}
 两人的关系说明书：${JSON.stringify(input.match)}
 用户对这段关系/这个人的想法和描述：${input.situation || "（还没说，可以主动问问）"}
 
-你的任务：帮用户读懂这个人、给聊天回复建议、推荐见面时机和活动、分析对方的潜台词。当用户发来对方的消息时，给出 2-3 个不同风格的回复选项（比如：俏皮版/真诚版/推拉版）。`;
+你的任务：只围绕这两个人的真实情况回答。结合双方的说明书、测试结果、合拍点、摩擦点和关系报告，分析你们的互动模式，给出具体建议。可以回答「我们适不适合」「为什么会这样」「下一步怎么推进」「第一次见面怎么安排」等问题。当用户发来对方的消息时，先结合双方差异解释，再给出 2-3 个不同风格的回复选项。不要把推测说成事实，也不要泄露与问题无关的对方隐私。`;
   }
 
   if (input.contextType === "external") {
@@ -90,6 +132,15 @@ export const Route = createFileRoute("/api/chat")({
         }
         const messages = body.messages as UIMessage[];
         const threadId = body.threadId as string;
+        const relatedMatchIdResult = z
+          .string()
+          .uuid()
+          .nullable()
+          .safeParse(body.relatedMatchId ?? null);
+        if (!relatedMatchIdResult.success) {
+          return new Response("relatedMatchId 格式错误", { status: 400 });
+        }
+        const relatedMatchId = relatedMatchIdResult.data;
         if (!Array.isArray(messages) || !threadId) {
           return new Response("messages 和 threadId 必填", { status: 400 });
         }
@@ -112,19 +163,13 @@ export const Route = createFileRoute("/api/chat")({
             .eq("thread_id", threadId),
         ]);
 
-        let match: unknown = null;
-        let persona: unknown = null;
-        if (thread.context_type === "match" && thread.match_id) {
-          const { data: m } = await supabase
-            .from("matches")
-            .select("score, highlights, relationship_manual, personas(nickname, gender, age, city, tagline, tags, manual)")
-            .eq("id", thread.match_id)
-            .maybeSingle();
-          if (m) {
-            match = { score: m.score, highlights: m.highlights, relationship_manual: m.relationship_manual };
-            persona = m.personas;
-          }
-        }
+        const matchContext = await loadMatchContext(
+          supabase,
+          user.id,
+          relatedMatchId ?? thread.match_id ?? "",
+        );
+        const match = matchContext?.match ?? null;
+        const persona = matchContext?.persona ?? null;
 
         // 先落库新增的用户消息（payload 是全量历史，跳过已存的）
         const uiMessages = messages;
