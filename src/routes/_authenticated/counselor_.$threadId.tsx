@@ -12,7 +12,6 @@ import {
   Conversation,
   ConversationContent,
   ConversationEmptyState,
-  ConversationScrollButton,
 } from "@/components/ai-elements/conversation";
 import { Message, MessageContent, MessageResponse } from "@/components/ai-elements/message";
 import {
@@ -98,7 +97,7 @@ function CounselorChat() {
     <AppShell>
       <div className="counselor-chat-page mx-auto flex h-[calc(100dvh-7.25rem)] w-full flex-col">
         {/* 头部 */}
-        <div className="flex items-center gap-3 pb-3">
+        <div className="counselor-chat-header flex items-center gap-3 pb-3">
           <button
             onClick={() => navigate({ to: "/counselor" })}
             className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
@@ -117,9 +116,9 @@ function CounselorChat() {
         </div>
 
         {/* 对话区 */}
-        <div className="dreamy-card flex min-h-0 flex-1 flex-col overflow-hidden">
-          <Conversation className="flex-1">
-            <ConversationContent className="gap-6 p-4 md:p-6">
+        <div className="counselor-chat-surface flex min-h-0 flex-1 flex-col overflow-hidden">
+          <Conversation className="counselor-chat-conversation flex-1">
+            <ConversationContent className="gap-5 px-1 py-5 md:px-3 md:py-6">
               {messages.length === 0 && (
                 <div>
                   <ConversationEmptyState
@@ -169,12 +168,12 @@ function CounselorChat() {
                 </Message>
               )}
             </ConversationContent>
-            <ConversationScrollButton />
           </Conversation>
 
           {/* 输入区 */}
-          <div className="border-t border-border/60 p-3">
+          <div className="counselor-chat-composer border-t border-border/60 pt-3">
             <PromptInput
+              className="counselor-prompt"
               onSubmit={async ({ text }) => {
                 const t = text.trim();
                 if (!t || isLoading) return;
