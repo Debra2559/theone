@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { ArrowLeft, BookOpen, Loader2, Sparkles } from "@/components/app-icons";
 import { generateManual, getMyProfile, saveTestResult } from "@/lib/app.functions";
 import { avatarDataUri } from "@/lib/avatars";
+import { loveGameMessageSchema, type LoveGamePayload } from "@/lib/love-game-schema";
 
 /**
  * 恋爱人格剧场 · 沉浸式互动小游戏
@@ -15,30 +16,6 @@ import { avatarDataUri } from "@/lib/avatars";
  * 这里负责把结果写入 test_results（test_id = love-dialogue），
  * 之后「生成说明书」会自动把这份画像喂给 AI，产出更丰富的个人说明书。
  */
-
-type GamePayload = {
-  profile: {
-    archetype?: string;
-    archetype_name?: string;
-    archetype_emoji?: string;
-    dimensions?: Record<string, number>;
-    evidence?: Record<string, unknown>;
-    stage_stats?: Record<string, unknown>;
-    [key: string]: unknown;
-  };
-  choices: Array<{
-    scenarioId: string;
-    stage?: string;
-    title?: string;
-    act?: number;
-    optionIndex: number;
-    optionText: string;
-    insight?: string;
-    weights?: Record<string, number>;
-  }>;
-  stageStats?: Record<string, unknown>;
-  answeredAt?: string;
-};
 
 export const Route = createFileRoute("/_authenticated/game")({
   head: () => ({
@@ -66,7 +43,9 @@ function GamePage() {
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const saveToken = useRef(0); // 防重复保存（iframe 内重玩会再次上报）
+  const saveToken = useRef(0);
+  const savingResultKey = useRef<string | null>(null);
+  const savedResultKey = useRef<string | null>(null);
 
   /* 进入剧场：把用户资料注入游戏（昵称 / 头像 / 性别），游戏侧据此开局 */
   const sendProfile = useCallback(() => {
@@ -75,16 +54,19 @@ function GamePage() {
         type: "love-game:profile",
         payload: {
           nickname: profile?.nickname ?? "",
-          gender: profile?.gender ?? "",                  // 男生 | 女生 | 保密
-          avatar: profile?.avatar ?? "",                  // emoji 或 db: 插画头像标识
+          gender: profile?.gender ?? "", // 男生 | 女生 | 保密
+          avatar: profile?.avatar ?? "", // emoji 或 db: 插画头像标识
           avatarImg: avatarDataUri(profile?.avatar) ?? "", // DiceBear 渲染好的 data URI
         },
       },
-      "*",
+      window.location.origin,
     );
   }, [profile]);
 
-  const syncResult = useCallback(async (payload: GamePayload) => {
+  const syncResult = useCallback(async (payload: LoveGamePayload) => {
+    const resultKey = JSON.stringify([payload.profile.generated_at, payload.choices]);
+    if (savingResultKey.current === resultKey || savedResultKey.current === resultKey) return;
+    savingResultKey.current = resultKey;
     const token = ++saveToken.current;
     setSaving(true);
     setSynced(false);
@@ -101,7 +83,10 @@ function GamePage() {
       await saveTestResult({
         data: {
           test_id: "love-dialogue",
-          answers: { choices: payload.choices ?? [], stageStats: payload.stageStats ?? p.stage_stats ?? {} },
+          answers: {
+            choices: payload.choices,
+            stageStats: payload.stageStats ?? p.stage_stats ?? {},
+          },
           result: {
             type: p.archetype ?? "unknown",
             label,
@@ -110,6 +95,7 @@ function GamePage() {
           },
         },
       });
+      savedResultKey.current = resultKey;
       if (token === saveToken.current) {
         setSynced(true);
         toast.success("画像已同步，可以更新你的说明书了 ✨");
@@ -117,16 +103,18 @@ function GamePage() {
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "画像同步失败，可通关后重试");
     } finally {
+      if (savingResultKey.current === resultKey) savingResultKey.current = null;
       if (token === saveToken.current) setSaving(false);
     }
   }, []);
 
   useEffect(() => {
     const onMessage = (e: MessageEvent) => {
-      const data = e.data as { type?: string; payload?: GamePayload } | null;
-      if (data?.type === "love-game:result" && data.payload?.profile) {
-        void syncResult(data.payload);
-      }
+      const iframe = iframeRef.current;
+      if (!iframe || e.source !== iframe.contentWindow || e.origin !== window.location.origin)
+        return;
+      const parsed = loveGameMessageSchema.safeParse(e.data);
+      if (parsed.success) void syncResult(parsed.data.payload);
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
