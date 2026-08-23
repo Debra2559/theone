@@ -13,7 +13,7 @@
   const show = id => { document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden')); $(id).classList.remove('hidden'); };
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-  const STORE = { me: 'ltm_profile_me', partner: 'ltm_profile_partner', host: 'ltm_host_profile' };
+  const STORE = { me: 'ltm_profile_me', partner: 'ltm_profile_partner', host: 'ltm_host_profile', meManual: 'ltm_manual_me' };
   const readStore = k => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
   const writeStore = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* ignore */ } };
 
@@ -58,18 +58,48 @@
     return hostProfile;
   }
 
-  /* TA 的形象：场景情绪符号（抽象体系，留白给想象） */
-  function taAvatarOf(sceneCfg) {
-    const mood = sceneCfg && sceneCfg.mood || '';
-    const MOOD_MAP = [
-      [/心动|甜|喜欢|开心|兴奋|期待|热/, '😊'], [/紧张|忐忑|犹豫/, '😖'],
-      [/委屈|失落|落空|难过|遗憾/, '🥺'], [/生气|愤怒|火|烦/, '😤'],
-      [/冷战|冷|疏离|沉默/, '🫥'], [/沉|重|压力|疲惫|累/, '😔'],
-      [/平静|安稳|踏实/, '🙂'], [/害羞|脸红|心动加速/, '☺️'],
-    ];
-    for (const [re, emoji] of MOOD_MAP) if (re.test(mood)) return emoji;
-    return (sceneCfg && sceneCfg.emoji) || '🌙';
+  /* ---------- TA 的形象：动漫头像 ----------
+   * TA 性别按玩家资料推断（男生→女生形象，女生→男生形象，保密→默认女生），
+   * 独立访问可用 ?ta=f|m 强制指定。 */
+  function taGender() {
+    const qs = new URLSearchParams(location.search).get('ta');
+    if (qs === 'f' || qs === 'm') return qs;
+    const g = (hostProfile && hostProfile.gender) || '';
+    if (/男/.test(g)) return 'f';
+    if (/女/.test(g)) return 'm';
+    return 'f';
   }
+  const taAvatarImg = () => `assets/avatar-${taGender()}.jpg`;
+
+  /* ---------- 选择后果的即时情绪（由选项权重推导，驱动反馈动效） ----------
+   * 正向（亲密/感性/主动被满足）→ TA 开心；负向集中 → TA 失落或生气；
+   * 委婉但温暖的试探 → 害羞扭捏；平淡 → 平静沉默 */
+  function deriveMood(weights) {
+    const w = weights || {};
+    const sum = Object.values(w).reduce((s, v) => s + v, 0);
+    const warm = (w.intimacy || 0) + (w.sensibility || 0) * 0.8 + (w.initiative || 0) * 0.6;
+    const score = sum * 0.55 + warm * 0.45;
+    if (score >= 2.6) return 'delight';
+    if (score >= 1.0) return 'happy';
+    if (score <= -2.6) return 'angry';
+    if (score <= -1.0) return 'hurt';
+    /* 委婉含蓄（降低直接度）但带着体贴（感性加分）→ 害羞试探 */
+    if ((w.directness || 0) <= -1 && (w.sensibility || 0) >= 1) return 'shy';
+    return 'neutral';
+  }
+
+  /* 场景屏情绪闪光：选择后果的氛围化表达 */
+  function flashMood(mood) {
+    if (mood === 'neutral') return;
+    const sg = $('#screen-game');
+    const cls = `flash-${mood}`;
+    sg.classList.remove('flash-delight', 'flash-happy', 'flash-shy', 'flash-hurt', 'flash-angry');
+    void sg.offsetWidth;               // 重置动画
+    sg.classList.add(cls);
+    setTimeout(() => sg.classList.remove(cls), 1100);
+  }
+
+  const MOOD_ICON = { delight: '💗', happy: '💡', shy: '🌸', neutral: '💡', hurt: '🌧️', angry: '⚡' };
 
   /* =====================================================================
    * 封面
@@ -89,6 +119,24 @@
     $('#intro-me-tip').innerHTML = me
       ? `上次生成：${esc(me.nickname || '我')} 的《${esc(me.archetype_name || '恋爱说明书')}》`
       : '这本说明书会随你每玩一次变得更立体。';
+
+    /* 上次报告直达：有完整存档时显示「查看上次的说明书」，不必重测 */
+    const archived = readStore(STORE.meManual);
+    const hasReport = !!(me && archived && archived.manual);
+    const lastBtn = $('#btn-last-report');
+    if (lastBtn) lastBtn.classList.toggle('hidden', !hasReport);
+    const startBtn = $('#btn-start-game');
+    if (startBtn) startBtn.textContent = hasReport ? '再玩一次，刷新说明书 →' : '开始这趟旅程 →';
+  }
+
+  /* 从存档直接回看上次生成的报告（不重测） */
+  function showLastReport() {
+    const me = readStore(STORE.me);
+    const archived = readStore(STORE.meManual);
+    if (!me || !archived || !archived.manual) { renderIntro(); return; }
+    manual = archived.manual;
+    profileJson = me;
+    renderReport();
   }
 
   function startGame(which) {
@@ -169,10 +217,10 @@
     const flow = flowEl(), bar = barEl();
     Dialogue.hideChoices(bar);
     flow.innerHTML = '';
-    Dialogue.systemDivider(flow, `${sceneCfg.time || ''} · ${sceneCfg.location || ''}`);
+    Dialogue.systemDivider(flow, `${sceneCfg.emoji ? sceneCfg.emoji + ' ' : ''}${sceneCfg.time || ''} · ${sceneCfg.location || ''}`);
 
     const dlg = scenario.dialogue || {};
-    const avatar = taAvatarOf(sceneCfg);
+    const avatar = taAvatarImg();
     const pace = sceneCfg.pace || 'normal';
     const intro = (dlg.intro || []).map(l => Object.assign({ avatar }, l));
 
@@ -191,21 +239,30 @@
     // cold 场景追加「已读」回执并留白一拍——已读不回，沉默即台词
     const sceneCfgA = scenario.scene || {};
     const paceA = sceneCfgA.pace || 'normal';
+    const mood = deriveMood(option.weights);      // 这个选择带给 TA 的即时情绪
     Dialogue.hideChoices(bar);
-    await Dialogue.appendMine(flow, option.text, { pace: paceA, readReceipt: paceA === 'cold' });
+    await Dialogue.appendMine(flow, option.text, {
+      pace: paceA,
+      readReceipt: paceA === 'cold',
+      avatar: session.playerAvatarImg || session.playerAvatar || '',
+    });
     if (questionIndex !== idx) return;
 
-    // TA 的反应台词 + 内心旁白（dialogue.reactions 与 options 同下标）
+    // 选择后果的氛围闪光（暖光=开心 / 冷光=失落 / 红光=生气）
+    flashMood(mood);
+
+    // TA 的反应台词 + 内心旁白：第一条台词先演一拍情绪（头像动效+表情浮标）
     const dlg = scenario.dialogue || {};
-    const avatar = taAvatarOf(sceneCfgA);
+    const avatar = taAvatarImg();
     const reactions = ((dlg.reactions || [])[optionIndex] || []).map(l => Object.assign({ avatar }, l));
     if (reactions.length) {
-      await Dialogue.play(flow, reactions, { taAvatar: avatar, pace: paceA });
+      await Dialogue.play(flow, reactions, { taAvatar: avatar, pace: paceA, reactMood: mood });
       if (questionIndex !== idx) return;
     }
 
-    // 即时洞察："选择即画像"
-    $('#insight-text').textContent = '💡 ' + option.note;
+    // 即时洞察："选择即画像"，图标随情绪变化
+    $('#insight-text').textContent = `${MOOD_ICON[mood] || '💡'} ${option.note}`;
+    $('#insight-toast').dataset.mood = mood;
     $('#insight-toast').classList.remove('hidden');
     $('#insight-toast').classList.add('pop');
 
@@ -215,6 +272,10 @@
       $('#insight-toast').classList.remove('pop');
       renderQuestion();
     });
+
+    // 洞察 toast 紧贴选项浮层上方：浮层高度随内容变化，按实际高度 + 12px 动态定位
+    const toast = $('#insight-toast');
+    toast.style.bottom = `${bar.offsetHeight + 12}px`;
   }
 
   /* =====================================================================
@@ -314,6 +375,7 @@
         renderCompat();
       } else {
         writeStore(STORE.me, profileJson);
+        writeStore(STORE.meManual, { manual, savedAt: new Date().toISOString() });   // 存档完整画像，封面可直接回看上次报告
         renderReport();
       }
     }, 900);
@@ -343,20 +405,12 @@
     cv.style.width = size + 'px'; cv.style.height = (size * 0.92) + 'px';
     drawRadar(cv, m.dimensions, dpr);
 
-    /* 维度条 */
-    $('#dim-bars').innerHTML = m.dimensionSummary.map(d => `
-      <div class="dim-row">
-        <div class="dim-label">${esc(d.label)} <span class="dim-val">${d.value}</span></div>
-        <div class="dim-track"><div class="dim-fill" style="width:${d.value}%"></div><div class="dim-knob" style="left:${d.value}%"></div></div>
-        <div class="dim-scale"><span>${esc(d.low)}</span><span>${esc(d.high)}</span></div>
-      </div>`).join('');
+    /* 八维卡墙：每个维度一张卡，点开可见分数的出处（证据链合并进卡片） */
+    renderDimCards(m);
 
-    /* 证据链：每个维度的分数都有出处 */
-    renderEvidence(m);
-
-    /* 沟通密码 & 关系模式 */
-    $('#r-comm').innerHTML = m.communicatePassword.map(t => `<li>${esc(t)}</li>`).join('');
-    $('#r-pattern').innerHTML = m.relationshipPattern.map(t => `<li>${esc(t)}</li>`).join('');
+    /* 沟通密码 & 关系模式（chips 轻量呈现） */
+    $('#r-comm').innerHTML = m.communicatePassword.map(t => `<span class="chip">${esc(t)}</span>`).join('');
+    $('#r-pattern').innerHTML = m.relationshipPattern.map(t => `<span class="chip">${esc(t)}</span>`).join('');
 
     /* 摩擦预警区 & 隐形闪光点 */
     $('#r-friction').innerHTML = (m.frictionAlerts.length ? m.frictionAlerts : ['暂无显著预警项，相处模式相对均衡']).map(t => `<li>${esc(t)}</li>`).join('');
@@ -385,27 +439,31 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  /* 证据链区块：每维度可展开「你在第 N 幕这样选」 */
-  function renderEvidence(m) {
-    const evidence = m.evidence || {};
-    const conf = m.confidence || {};
-    $('#r-evidence').innerHTML = GameEngine.DIMENSIONS.map((d, i) => {
-      const items = evidence[d.key] || [];
-      const score = m.dimensions[d.key];
-      const confN = conf[d.key] || 0;
+  /* 八维卡墙：分数 + 倾向标签 + 迷你条，点开卡片看「我在第几幕这样选」 */
+  function renderDimCards(m) {
+    $('#dim-cards').innerHTML = GameEngine.DIMENSIONS.map(d => {
+      const v = m.dimensions[d.key];
+      const anchor = v >= 55 ? d.high : (v <= 45 ? d.low : '均衡');
+      const items = (m.evidence || {})[d.key] || [];
+      const confN = (m.confidence || {})[d.key] || 0;
       const lines = items.map(it => `
         <div class="ev-line">
           <span class="ev-act">第 ${it.act} 幕</span>${esc(it.choice)}
           ${it.note ? `<br><span class="ev-conf">${esc(it.note)}</span>` : ''}
         </div>`).join('');
       return `
-        <div class="ev-item${i === 0 ? ' open' : ''}">
-          <div class="ev-head" onclick="this.parentElement.classList.toggle('open')">
-            <span>${esc(d.label)}<span class="ev-caret"> ▸</span></span>
-            <span><span class="ev-conf">${confN} 个依据</span> <span class="ev-score">${score}</span></span>
-          </div>
-          <div class="ev-list">${lines || '<div class="ev-line">本局该维度未被重点探测</div>'}</div>
-        </div>`;
+      <div class="dim-card">
+        <div class="dim-card-head">
+          <span class="dim-card-label">${esc(d.label)}</span>
+          <span class="dim-card-val">${v}</span>
+        </div>
+        <div class="dim-track"><div class="dim-fill" style="width:${v}%"></div><div class="dim-knob" style="left:${v}%"></div></div>
+        <div class="dim-card-anchor">${esc(anchor)}</div>
+        <button type="button" class="dim-card-ev" onclick="this.closest('.dim-card').classList.toggle('open')">
+          ${confN} 个依据<span class="ev-caret"> ▸</span>
+        </button>
+        <div class="dim-card-evlist">${lines || '<div class="ev-line">本局该维度未被重点探测</div>'}</div>
+      </div>`;
     }).join('');
   }
 
@@ -605,6 +663,7 @@
     confirmFate,
     copyShare,
     showCompat: () => renderCompat(),
+    showLastReport,
     xinyuan: (scene) => refreshXinyuan(scene),
     refreshCompat: () => renderCompatSection(),
     renderIntro,

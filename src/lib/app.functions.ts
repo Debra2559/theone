@@ -108,6 +108,16 @@ export const generateManual = createServerFn({ method: "POST" })
       resultMap[r.test_id] = r.result as { label?: string; summary?: string };
     }
     /* 恋爱人格剧场：完整画像（30 幕选择 + 证据链）太长，蒸馏成 AI 可用的摘要 */
+    const DIM_LABELS: Record<string, string> = {
+      directness: "沟通直接度",
+      sensibility: "感性与共情",
+      initiative: "主动性",
+      independence: "独立与空间",
+      conflict_confront: "冲突直面度",
+      future_oriented: "未来导向",
+      savings: "金钱规划",
+      intimacy: "亲密度需求",
+    };
     const loveGame = resultMap["love-dialogue"] as
       | {
           label?: string;
@@ -115,7 +125,10 @@ export const generateManual = createServerFn({ method: "POST" })
           detail?: {
             archetype_name?: string;
             sub_style?: string;
-            dimensions?: Array<{ key?: string; label?: string; value?: number; anchor?: string }>;
+            dimensions?:
+              | Array<{ key?: string; label?: string; value?: number; anchor?: string }>
+              | Record<string, number>;
+            dimensions_detail?: Array<{ key?: string; label?: string; value?: number; anchor?: string }>;
             communicate_password?: string[];
             relationship_pattern?: string[];
             friction_alerts?: string[];
@@ -128,7 +141,19 @@ export const generateManual = createServerFn({ method: "POST" })
       | undefined;
     if (loveGame?.detail) {
       const d = loveGame.detail;
-      const dims = (d.dimensions ?? [])
+      /* 维度列表三态兼容：优先 dimensions_detail（数组），
+         其次数组形态 dimensions，最后对象形态 dimensions（Record<key, 0~100>） */
+      const dimsList: Array<{ key?: string; label?: string; value?: number; anchor?: string }> =
+        d.dimensions_detail ??
+        (Array.isArray(d.dimensions)
+          ? d.dimensions
+          : Object.entries(d.dimensions ?? {}).map(([key, value]) => ({
+              key,
+              label: DIM_LABELS[key] ?? key,
+              value: value as number,
+              anchor: "",
+            })));
+      const dims = dimsList
         .map((x) => `${x.label ?? x.key}=${Math.round(x.value ?? 0)}(${x.anchor ?? ""})`)
         .join("、");
       const evidence = Object.entries(d.evidence ?? {})

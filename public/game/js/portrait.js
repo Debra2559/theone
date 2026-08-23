@@ -227,6 +227,9 @@ const Portrait = (() => {
       archetype_name: manual.archetype.name,    // 人格中文名（展示/心元文案消费）
       archetype_emoji: manual.archetype.emoji,
       dimensions: manual.dimensions,
+      /* 数组形态（[{key,label,value,anchor,low,high}]）：供宿主 App 生成说明书时直接消费；
+         dimensions 保持对象形态（Record<key, 0~100>），供 analyzers 契合度计算使用 */
+      dimensions_detail: GameEngine.dimSummary(manual.dimensions),
       dimension_confidence: manual.confidence,  // 各维度证据条数（置信度）
       evidence: manual.evidence,                // 证据链：维度 → 关键选择（AI 说明书引用）
       stage_stats: manual.stageStats,           // 各阶段独立画像（观察关系演变）

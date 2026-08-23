@@ -26,7 +26,8 @@
 
     <div class="card intro-card">
       <p class="intro-greet" id="intro-greet"></p>
-      <button class="btn primary big" onclick="App.start()">开始这趟旅程 →</button>
+      <button class="btn primary big" id="btn-start-game" onclick="App.start()">开始这趟旅程 →</button>
+      <button class="btn ghost big hidden" id="btn-last-report" onclick="App.showLastReport()">查看上次的说明书 →</button>
       <p id="intro-me-tip" class="muted small"></p>
       <p class="divider" id="intro-partner-tip"></p>
     </div>
@@ -86,76 +87,90 @@
 
   <!-- ==================== 报告：个人说明书 ==================== -->
   <section id="screen-report" class="screen hidden">
-    <div class="report-card">
-      <!-- 头部 -->
-      <div class="report-head">
-        <div class="avatar" id="r-arch-emoji">🌷</div>
-        <div class="report-head-text">
-          <p class="small muted" id="r-name">我</p>
-          <h1 id="r-arch-name">浪漫冒险家</h1>
-          <p class="tagline" id="r-tagline"></p>
-          <span class="substyle" id="r-substyle"></span>
+    <div class="report-deck">
+      <!-- 人格 hero 卡 -->
+      <div class="report-card hero-card">
+        <div class="report-head">
+          <div class="avatar" id="r-arch-emoji">🌷</div>
+          <div class="report-head-text">
+            <p class="small muted" id="r-name">我</p>
+            <h1 id="r-arch-name">浪漫冒险家</h1>
+            <p class="tagline" id="r-tagline"></p>
+            <span class="substyle" id="r-substyle"></span>
+          </div>
+        </div>
+        <p id="r-paragraph" class="report-paragraph"></p>
+      </div>
+
+      <!-- 雷达卡 -->
+      <div class="report-card radar-card">
+        <h3 class="sec-title">📊 画像雷达</h3>
+        <div class="radar-wrap"><canvas id="radar"></canvas></div>
+      </div>
+
+      <!-- 八维卡墙：每维一张卡，点开看出处 -->
+      <h3 class="deck-title">🧩 我的八维画像 <span class="muted small">点开卡片，看每个分数背后的选择</span></h3>
+      <div id="dim-cards" class="dim-cards"></div>
+
+      <!-- 沟通密码 & 关系模式 -->
+      <div class="deck-grid">
+        <div class="report-card mini-card">
+          <h3 class="sec-title">🗝️ 沟通密码</h3>
+          <div id="r-comm" class="chips"></div>
+        </div>
+        <div class="report-card mini-card">
+          <h3 class="sec-title">🔗 关系模式</h3>
+          <div id="r-pattern" class="chips"></div>
         </div>
       </div>
-      <p id="r-paragraph" class="report-paragraph"></p>
-
-      <!-- 雷达图 -->
-      <h3 class="sec-title">📊 我的画像雷达</h3>
-      <div class="radar-wrap"><canvas id="radar"></canvas></div>
-      <div id="dim-bars" class="dim-bars"></div>
-
-      <!-- 证据链：每个维度的分数都有出处 -->
-      <h3 class="sec-title">🧾 我的证据链</h3>
-      <p class="muted small" style="margin-bottom:10px">画像不是猜的——每个分数背后，是你在剧中做过的真实选择。</p>
-      <div id="r-evidence" class="evidence-wrap"></div>
-
-      <!-- 沟通密码 -->
-      <h3 class="sec-title">🗝️ 我的沟通密码</h3>
-      <ul id="r-comm" class="nice-list"></ul>
-
-      <!-- 关系模式 -->
-      <h3 class="sec-title">🔗 我的关系模式</h3>
-      <ul id="r-pattern" class="nice-list"></ul>
 
       <!-- 预警区 & 闪光点 -->
-      <div class="two-col">
-        <div>
+      <div class="deck-grid">
+        <div class="report-card mini-card warn-card">
           <h3 class="sec-title warn">⚠️ 摩擦预警区</h3>
           <ul id="r-friction" class="nice-list warn"></ul>
         </div>
-        <div>
+        <div class="report-card mini-card good-card">
           <h3 class="sec-title good">✨ 隐形闪光点</h3>
           <ul id="r-strengths" class="nice-list good"></ul>
         </div>
       </div>
 
       <!-- 成长建议 & 理想伴侣画像 -->
-      <h3 class="sec-title good">🌱 给 TA 的成长建议</h3>
-      <ul id="r-growth" class="nice-list good"></ul>
+      <div class="report-card mini-card">
+        <h3 class="sec-title good">🌱 给 TA 的成长建议</h3>
+        <ul id="r-growth" class="nice-list good"></ul>
+      </div>
 
-      <h3 class="sec-title ai">💑 适合我的 TA</h3>
-      <div id="r-ideal" class="ideal-card"></div>
+      <div class="report-card mini-card">
+        <h3 class="sec-title ai">💑 适合我的 TA</h3>
+        <div id="r-ideal" class="ideal-card"></div>
+      </div>
 
       <!-- 预留接口②：心元大模型 -->
-      <h3 class="sec-title ai">🧠 心元大模型解读 <span class="tag-demo">接口预留</span></h3>
-      <div class="ai-card">
-        <button class="btn primary xinyuan-go" id="xinyuan-confirm" onclick="App.confirmXinyuan()">🔮 让心元大模型解读我的说明书</button>
-        <div id="xinyuan-scenes" class="scene-tabs">
-          <button data-scene="companionship" id="scene-companion">情感陪伴</button>
-          <button data-scene="fate" id="scene-fate">缘分测量</button>
-          <button data-scene="insight" id="scene-insight" class="active">人格洞察</button>
+      <div class="report-card mini-card">
+        <h3 class="sec-title ai">🧠 心元大模型解读 <span class="tag-demo">接口预留</span></h3>
+        <div class="ai-card">
+          <button class="btn primary xinyuan-go" id="xinyuan-confirm" onclick="App.confirmXinyuan()">🔮 让心元大模型解读我的说明书</button>
+          <div id="xinyuan-scenes" class="scene-tabs">
+            <button data-scene="companionship" id="scene-companion">情感陪伴</button>
+            <button data-scene="fate" id="scene-fate">缘分测量</button>
+            <button data-scene="insight" id="scene-insight" class="active">人格洞察</button>
+          </div>
+          <p id="xinyuan-summary" class="ai-text">正在生成…</p>
+          <p id="xinyuan-tip" class="muted small"></p>
+          <details class="payload">
+            <summary>查看发送给心元大模型的请求体（契约）</summary>
+            <pre id="xinyuan-payload"></pre>
+          </details>
         </div>
-        <p id="xinyuan-summary" class="ai-text">正在生成…</p>
-        <p id="xinyuan-tip" class="muted small"></p>
-        <details class="payload">
-          <summary>查看发送给心元大模型的请求体（契约）</summary>
-          <pre id="xinyuan-payload"></pre>
-        </details>
       </div>
 
       <!-- 预留接口①：缘分匹配 -->
-      <h3 class="sec-title ai">💞 缘分匹配 <span class="tag-demo">接口预留</span></h3>
-      <div id="compat-box" class="ai-card"></div>
+      <div class="report-card mini-card">
+        <h3 class="sec-title ai">💞 缘分匹配 <span class="tag-demo">接口预留</span></h3>
+        <div id="compat-box" class="ai-card"></div>
+      </div>
 
       <!-- 分享 & 数据 -->
       <div class="actions">
