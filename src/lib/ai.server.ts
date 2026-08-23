@@ -89,14 +89,15 @@ export function buildManualFallback(
     .filter((d) => (d.value ?? 0) <= 38)
     .sort((a, b) => (a.value ?? 0) - (b.value ?? 0))
     .slice(0, 1);
+  /* 分点不带括号、不带「——由 XXX 绘出」来源后缀（用户要求：闪光点文本干净直接） */
   const dimPoints = [
-    ...highDims.map((d) => `${d.label ?? d.key}：${d.anchor || "突出"}（${Math.round(d.value ?? 0)}）`),
-    ...lowDims.map((d) => `${d.label ?? d.key}：${d.anchor || "偏低"}（${Math.round(d.value ?? 0)}）`),
+    ...highDims.map((d) => `${d.label ?? d.key}：${d.anchor || "突出"} ${Math.round(d.value ?? 0)}`),
+    ...lowDims.map((d) => `${d.label ?? d.key}：${d.anchor || "偏低"} ${Math.round(d.value ?? 0)}`),
   ].slice(0, 3);
   const gameArchetype = gd.archetype_name
-    ? `剧场人格：${gd.archetype_name}${gd.sub_style ? `（${gd.sub_style}）` : ""}——由 30 幕剧情选择绘出`
+    ? `剧场人格：${gd.archetype_name}${gd.sub_style ? ` · ${gd.sub_style}` : ""}`
     : loveGame?.label
-      ? `剧场人格：${loveGame.label}——由 30 幕剧情选择绘出`
+      ? `剧场人格：${loveGame.label}`
       : "";
 
   const sections: ManualSection[] = [
