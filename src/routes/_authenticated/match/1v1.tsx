@@ -44,7 +44,7 @@ function OneOnOne() {
 
   useEffect(() => {
     if (stage !== "pull") return;
-    const timer = window.setTimeout(() => setStage("bridge"), 2800);
+    const timer = window.setTimeout(() => setStage("bridge"), 4600);
     return () => window.clearTimeout(timer);
   }, [stage]);
 
@@ -207,17 +207,29 @@ function OneOnOne() {
               className={`one-on-one-scene mt-5 ${stage === "pull" ? "is-pulling" : "is-bridge"}`}
             >
               <div className="one-on-one-stars" aria-hidden />
+              <div className="one-on-one-atmosphere" aria-hidden>
+                <span className="scene-moon" />
+                <span className="scene-cloud scene-cloud-one" />
+                <span className="scene-cloud scene-cloud-two" />
+              </div>
               <div className="cupid-character" aria-label="丘比特">
                 <span className="cupid-wing cupid-wing-left" />
                 <span className="cupid-wing cupid-wing-right" />
+                <span className="cupid-body" />
                 <span className="cupid-head">丘</span>
                 <span className="cupid-bow" />
+                <span className="cupid-bowstring" />
                 <span className="cupid-label">丘比特</span>
               </div>
               <div className="love-arrow" aria-hidden>
-                <span />
+                <span className="love-arrow-shaft" />
+                <span className="love-arrow-heart" />
+                <span className="love-arrow-spark" />
               </div>
+              <div className="match-thread match-thread-me" aria-hidden />
+              <div className="match-thread match-thread-them" aria-hidden />
               <div className="traveler traveler-me">
+                <span className="traveler-shadow" aria-hidden />
                 <span className="traveler-avatar traveler-avatar-me">
                   <UserAvatar avatar={profile?.avatar} className="h-full w-full text-xl" />
                 </span>
@@ -232,7 +244,10 @@ function OneOnOne() {
               <div className="bridge-scene" aria-hidden>
                 <span className="bridge-rail bridge-rail-left" />
                 <span className="bridge-rail bridge-rail-right" />
+                <span className="bridge-lamp bridge-lamp-left" />
+                <span className="bridge-lamp bridge-lamp-right" />
                 <span className="bridge-deck" />
+                <span className="bridge-seam" />
                 <span className="bridge-water bridge-water-one" />
                 <span className="bridge-water bridge-water-two" />
               </div>
