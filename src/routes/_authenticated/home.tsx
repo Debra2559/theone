@@ -10,9 +10,12 @@ export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
     meta: [
       { title: "理解 · 心动说明书" },
-      { name: "description", content: "做好玩的轻测试，生成你的专属个人说明书。" },
+      { name: "description", content: "从轻测试开始，认识自己、看见自己，写下你的个人说明书。" },
       { property: "og:title", content: "理解 · 心动说明书" },
-      { property: "og:description", content: "做好玩的轻测试，生成你的专属个人说明书。" },
+      {
+        property: "og:description",
+        content: "从轻测试开始，认识自己、看见自己，写下你的个人说明书。",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -96,16 +99,16 @@ function Home() {
           </span>
         </div>
         <div className="relative z-10 max-w-[15rem]">
-          <p className="manual-feature-label">我的说明书</p>
+          <p className="manual-feature-label">认识自己 · 看见自己</p>
           <p className="manual-feature-percent">
             {percent}
             <span>%</span>
           </p>
           <p className="manual-feature-copy">
             {hasManual
-              ? "说明书已生成，随时可以翻阅"
+              ? "你的理解已被写下，随时可以翻阅"
               : testCount === 0
-                ? "做第一个测试，开始写你的说明书"
+                ? "从一个小问题开始，听见自己的答案"
                 : `已完成 ${testCount}/${totalTests} 个测试，快集齐啦`}
           </p>
         </div>

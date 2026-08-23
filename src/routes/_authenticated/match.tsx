@@ -1,4 +1,11 @@
-import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  redirect,
+  useNavigate,
+  useRouterState,
+  Link,
+  Outlet,
+} from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -94,6 +101,7 @@ const QUICK_QUESTIONS = [
 ];
 
 function Match() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { candidates, hasData } = Route.useLoaderData() as {
     candidates: Candidate[];
     hasData: boolean;
@@ -181,6 +189,8 @@ function Match() {
   const currentQuickAnswers = current ? (quickAnswers[current.persona.id] ?? []) : [];
   const quickComplete = currentQuickAnswers.length >= QUICK_QUESTIONS.length;
   const quickQuestion = QUICK_QUESTIONS[currentQuickAnswers.length % QUICK_QUESTIONS.length];
+
+  if (pathname === "/match/1v1") return <Outlet />;
 
   const answerQuickQuestion = (answer: string) => {
     if (!current || quickComplete) return;

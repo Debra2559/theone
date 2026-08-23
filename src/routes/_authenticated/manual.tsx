@@ -32,9 +32,15 @@ export const Route = createFileRoute("/_authenticated/manual")({
   head: () => ({
     meta: [
       { title: "我的说明书 · 心动说明书" },
-      { name: "description", content: "由你的测试生成的专属个人说明书。" },
+      {
+        name: "description",
+        content: "一份帮助你认识自己、看见自己，也更从容走近他人的个人说明书。",
+      },
       { property: "og:title", content: "我的说明书 · 心动说明书" },
-      { property: "og:description", content: "由你的测试生成的专属个人说明书。" },
+      {
+        property: "og:description",
+        content: "一份帮助你认识自己、看见自己，也更从容走近他人的个人说明书。",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -248,7 +254,9 @@ function Manual() {
             {profile?.nickname} 的<span className="gradient-text">使用说明书</span>
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {hasManual ? "由你的测试和资料生成 · 可随时更新" : "完成任意测试后即可生成"}
+            {hasManual
+              ? "认识自己的来处，看见当下的你 · 可随时更新"
+              : "从一次选择开始，慢慢看见真实的自己"}
           </p>
         </div>
         {hasManual && (
@@ -302,7 +310,7 @@ function Manual() {
           <span className="text-6xl">📖</span>
           <h2 className="font-display mt-4 text-xl font-bold">说明书还是空白页</h2>
           <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-            做完任意一个测试，AI 就能把你的性格、心动模式和相处偏好写成一份专属说明书。
+            做完任意一个测试，从一份小小的选择开始，逐渐认识自己的性格、感受与相处方式。
           </p>
           {results.length > 0 ? (
             <button
@@ -374,7 +382,7 @@ function Manual() {
                           {m.title?.replace(/[《》]/g, "") ?? `清醒的 ${profile?.nickname}`}
                         </h2>
                         <p className="social-report-lede">
-                          {m.oneLiner ?? "在自己的节奏里，认真遇见同频的人"}
+                          {m.oneLiner ?? "认识自己，才知道什么样的靠近真正适合你"}
                         </p>
                       </div>
                       <div className="social-report-hero-portrait">
@@ -417,7 +425,7 @@ function Manual() {
 
                     <div className="social-report-source-note">
                       <span className="social-report-source-mark">✦</span>
-                      <p>AI 基于你在互动中的选择和表达，整理出这份专属社交画像。</p>
+                      <p>这不是给你贴上的标签，而是一面帮助你认识自己、看见自己的镜子。</p>
                       <span>阅读时间 · 约 3 分钟</span>
                     </div>
 
