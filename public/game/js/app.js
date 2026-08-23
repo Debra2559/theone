@@ -29,6 +29,7 @@
    * 宿主资料注入（iframe 场景）+ 独立访问 fallback
    * ===================================================================== */
   window.addEventListener('message', (e) => {
+    if (e.source !== window.parent || e.origin !== window.location.origin) return;
     const d = e.data;
     if (d && d.type === 'love-game:profile' && d.payload) {
       hostProfile = {
@@ -366,7 +367,7 @@
               stageStats: profileJson.stage_stats,
               answeredAt: new Date().toISOString(),
             },
-          }, '*');
+          }, window.location.origin);
         }
       } catch (e) { /* 独立运行时忽略 */ }
 
