@@ -7,6 +7,14 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  // The local app is commonly opened through 127.0.0.1 or a LAN IP. Vite's
+  // inferred HMR hostname can then point at localhost and leave the page
+  // partially hydrated, so use a stable reload-based dev server locally.
+  vite: {
+    server: {
+      hmr: false,
+    },
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

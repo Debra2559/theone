@@ -73,14 +73,14 @@ function MatchDetail() {
   const [generating, setGenerating] = useState(false);
   const [chatting, setChatting] = useState(false);
 
-  const persona = match.personas as unknown as {
-    id: string;
+  const persona = (match.personas ?? match.partner_profile) as unknown as {
+    id?: string;
     nickname: string;
-    age: number;
+    age?: number;
     city: string;
-    tagline: string;
+    tagline?: string;
     avatar: string;
-    bio: string;
+    bio?: string;
   };
   const rel = (match.relationship_manual ?? null) as RelManual | null;
 
@@ -150,7 +150,9 @@ function MatchDetail() {
           <p className="mx-auto mt-4 max-w-md text-sm text-muted-foreground">「{rel.verdict}」</p>
         )}
         <p className="mt-2 text-xs text-muted-foreground">
-          {persona.nickname} · {persona.age}岁 · {persona.city} —— {persona.tagline}
+          {persona.nickname}
+          {persona.age ? ` · ${persona.age}岁` : ""} · {persona.city}
+          {persona.tagline ? ` —— ${persona.tagline}` : ""}
         </p>
 
         <div className="mt-5 flex flex-wrap justify-center gap-2">
@@ -177,7 +179,11 @@ function MatchDetail() {
             disabled={chatting}
             className="btn-starlight inline-flex items-center gap-1.5 rounded-full px-6 py-2.5 text-sm font-semibold disabled:opacity-60"
           >
-            {chatting ? <Loader2 className="h-4 w-4 animate-spin" /> : <MessageCircleHeart className="h-4 w-4" />}
+            {chatting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <MessageCircleHeart className="h-4 w-4" />
+            )}
             找军师聊聊 TA
           </button>
         </div>

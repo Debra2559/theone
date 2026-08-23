@@ -10,13 +10,23 @@ export const Route = createFileRoute("/_authenticated/home")({
   head: () => ({
     meta: [
       { title: "理解 · 心动说明书" },
-      { name: "description", content: "做好玩的轻测试，生成你的专属个人说明书。" },
+      { name: "description", content: "从轻测试开始，认识自己、看见自己，写下你的个人说明书。" },
       { property: "og:title", content: "理解 · 心动说明书" },
-      { property: "og:description", content: "做好玩的轻测试，生成你的专属个人说明书。" },
+      {
+        property: "og:description",
+        content: "从轻测试开始，认识自己、看见自己，写下你的个人说明书。",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { invite?: string } => {
+    const invite =
+      typeof search["invite"] === "string" && /^[a-f0-9]{32}$/i.test(search["invite"])
+        ? search["invite"]
+        : undefined;
+    return invite ? { invite } : {};
+  },
   loader: async () => {
     const data = await getHomeData();
     if (!data.profile?.onboarding_done) throw redirect({ to: "/onboarding" });
@@ -28,6 +38,7 @@ export const Route = createFileRoute("/_authenticated/home")({
 
 function Home() {
   const { profile, testCount, testIds, hasManual } = Route.useLoaderData();
+  const { invite } = Route.useSearch();
   const totalTests = TESTS.length;
   const percent = Math.round((testCount / totalTests) * 100);
 
@@ -51,6 +62,26 @@ function Home() {
         </Link>
       </header>
 
+      {invite && (
+        <section className="invite-return-banner mt-5">
+          <p className="home-kicker">A SHARED FIELD GUIDE</p>
+          <p className="mt-1 font-display text-base font-semibold">
+            {testCount > 0
+              ? "测试完成，回到邀请函查看你们的报告"
+              : "完成一个测试，解锁你们的关系报告"}
+          </p>
+          {testCount > 0 && (
+            <Link
+              to="/invite/$token"
+              params={{ token: invite }}
+              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary"
+            >
+              回到邀请函 <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
+        </section>
+      )}
+
       <section className="manual-feature relative mt-7 overflow-hidden">
         <div className="manual-feature-grain pointer-events-none absolute inset-0" />
         <span aria-hidden className="manual-feature-orbit manual-feature-orbit-one" />
@@ -68,16 +99,16 @@ function Home() {
           </span>
         </div>
         <div className="relative z-10 max-w-[15rem]">
-          <p className="manual-feature-label">我的说明书</p>
+          <p className="manual-feature-label">认识自己 · 看见自己</p>
           <p className="manual-feature-percent">
             {percent}
             <span>%</span>
           </p>
           <p className="manual-feature-copy">
             {hasManual
-              ? "说明书已生成，随时可以翻阅"
+              ? "你的理解已被写下，随时可以翻阅"
               : testCount === 0
-                ? "做第一个测试，开始写你的说明书"
+                ? "从一个小问题开始，听见自己的答案"
                 : `已完成 ${testCount}/${totalTests} 个测试，快集齐啦`}
           </p>
         </div>
@@ -91,6 +122,7 @@ function Home() {
           <Link
             to="/tests/$testId"
             params={{ testId: TESTS[0]!.id }}
+            search={invite ? { invite } : {}}
             className="manual-feature-cta"
           >
             <BookOpen className="h-4 w-4" />
@@ -124,6 +156,7 @@ function Home() {
                 key={t.id}
                 to={t.kind === "game" ? "/game" : "/tests/$testId"}
                 params={t.kind === "game" ? undefined : { testId: t.id }}
+                search={t.kind === "game" ? undefined : invite ? { invite } : {}}
                 className={`home-test-card home-test-card-${i % 4} group relative overflow-hidden transition-transform hover:-translate-y-1 active:scale-[0.98]`}
               >
                 <div className="home-test-card-top">

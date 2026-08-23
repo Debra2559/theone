@@ -1,11 +1,14 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
+  Lock,
   Sparkles,
   Heart,
   HeartFilled,
   MessageCircleHeart,
   CircleUserRound,
 } from "@/components/app-icons";
+import { getOneOnOneLock, subscribeToOneOnOneLock } from "@/lib/one-on-one";
 
 const NAV = [
   { to: "/home", label: "理解", icon: Sparkles },
@@ -16,6 +19,9 @@ const NAV = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const [oneOnOneLock, setOneOnOneLock] = useState(() => getOneOnOneLock());
+
+  useEffect(() => subscribeToOneOnOneLock(() => setOneOnOneLock(getOneOnOneLock())), []);
 
   return (
     <div className="min-h-dvh bg-background">
@@ -29,11 +35,41 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto w-full max-w-md">
           {/* 内容滑入导航前的渐隐过渡 */}
           <div className="pointer-events-none h-8 bg-gradient-to-t from-background via-background/70 to-transparent" />
+          {oneOnOneLock && (
+            <div className="one-on-one-lock-banner mx-5 mb-2 flex items-center gap-2 rounded-2xl border px-3 py-2.5 backdrop-blur-xl">
+              <Lock className="h-4 w-4 shrink-0" />
+              <p className="min-w-0 flex-1 truncate text-[11px]">
+                1v1 专注中 · 正在寻找 {oneOnOneLock.candidateNickname}
+              </p>
+              <Link
+                to="/match/1v1"
+                className="shrink-0 text-[10px] font-semibold underline underline-offset-2"
+              >
+                查看
+              </Link>
+            </div>
+          )}
           <div className="px-5 pb-5">
             <div className="app-nav flex items-center justify-between gap-1 rounded-full border p-1.5 backdrop-blur-xl">
               {NAV.map(({ to, label, icon: Icon }) => {
                 const active = pathname.startsWith(to);
+                const blocked = Boolean(oneOnOneLock) && (to === "/match" || to === "/counselor");
                 const TabIcon = active && to === "/match" ? HeartFilled : Icon;
+                if (blocked) {
+                  return (
+                    <span
+                      key={to}
+                      aria-label={`${label}（1v1 专注中）`}
+                      aria-disabled="true"
+                      className="flex flex-1 cursor-not-allowed flex-col items-center justify-center gap-[3px] rounded-full py-2 text-muted-foreground/35"
+                    >
+                      <Lock className="h-[17px] w-[17px]" />
+                      <span className="font-display text-[10px] leading-none tracking-[0.14em]">
+                        {label}
+                      </span>
+                    </span>
+                  );
+                }
                 return (
                   <Link
                     key={to}

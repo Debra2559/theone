@@ -9,14 +9,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { renderPoster, type PosterData } from "@/lib/poster";
+import { createRelationshipInvite } from "@/lib/relationship.functions";
 
-export function SharePosterButton({
-  data,
-  filename,
-}: {
-  data: PosterData;
-  filename: string;
-}) {
+export function SharePosterButton({ data, filename }: { data: PosterData; filename: string }) {
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
   const [imgUrl, setImgUrl] = useState<string | null>(null);
@@ -25,7 +20,14 @@ export function SharePosterButton({
   const generate = async () => {
     setBusy(true);
     try {
-      const canvas = await renderPoster(data);
+      const posterData =
+        data.kind === "manual"
+          ? {
+              ...data,
+              inviteUrl: `${window.location.origin}/invite/${(await createRelationshipInvite()).token}`,
+            }
+          : data;
+      const canvas = await renderPoster(posterData);
       const b = await new Promise<Blob | null>((res) => canvas.toBlob(res, "image/png"));
       if (!b) throw new Error("empty");
       if (imgUrl) URL.revokeObjectURL(imgUrl);

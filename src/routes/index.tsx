@@ -10,13 +10,12 @@ export const Route = createFileRoute("/")({
       { title: "心动说明书 · 遇见真正懂你的人" },
       {
         name: "description",
-        content:
-          "用好玩的测试写一份关于你的使用说明书，让 AI 帮你遇见真正合拍的人，还有狐军师全程陪跑你的恋爱。",
+        content: "从轻测试开始认识自己、看见自己，写下会陪你不断更新的人生说明书。",
       },
       { property: "og:title", content: "心动说明书 · 遇见真正懂你的人" },
       {
         property: "og:description",
-        content: "好玩的测试 × AI 个人说明书 × 智能匹配 × 恋爱军师，年轻人的恋爱通关指南。",
+        content: "认识自己 × 看见自己 × 读懂关系，把每一次选择都变成更清晰的自我理解。",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

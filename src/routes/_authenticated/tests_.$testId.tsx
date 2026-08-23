@@ -17,6 +17,13 @@ export const Route = createFileRoute("/_authenticated/tests_/$testId")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { invite?: string } => {
+    const invite =
+      typeof search["invite"] === "string" && /^[a-f0-9]{32}$/i.test(search["invite"])
+        ? search["invite"]
+        : undefined;
+    return invite ? { invite } : {};
+  },
   loader: async ({ params }) => {
     const test = getTest(params.testId);
     if (!test) throw notFound();
@@ -31,7 +38,10 @@ export const Route = createFileRoute("/_authenticated/tests_/$testId")({
       <div className="dreamy-card mx-auto mt-16 max-w-md p-8 text-center">
         <p className="text-4xl">🔭</p>
         <p className="mt-3 font-display font-semibold">这个测试不存在</p>
-        <Link to="/home" className="btn-starlight mt-5 inline-block rounded-full px-6 py-2 text-sm font-semibold">
+        <Link
+          to="/home"
+          className="btn-starlight mt-5 inline-block rounded-full px-6 py-2 text-sm font-semibold"
+        >
           回理解页
         </Link>
       </div>
@@ -44,6 +54,7 @@ type DoneResult = { testId: string; emoji: string; label: string; summary: strin
 
 function TestRunner() {
   const { test, birthDate } = Route.useLoaderData();
+  const { invite } = Route.useSearch();
   const navigate = useNavigate();
   const [index, setIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
@@ -51,7 +62,11 @@ function TestRunner() {
   const [busy, setBusy] = useState(false);
   const [generating, setGenerating] = useState(false);
 
-  const save = async (testId: string, answersPayload: Record<string, unknown>, result: Record<string, unknown>) => {
+  const save = async (
+    testId: string,
+    answersPayload: Record<string, unknown>,
+    result: Record<string, unknown>,
+  ) => {
     await saveTestResult({ data: { test_id: testId, answers: answersPayload, result } });
   };
 
@@ -71,7 +86,9 @@ function TestRunner() {
         { answers: next },
         { type: scored.type, label: scored.label, summary: scored.summary, detail: scored.detail },
       );
-      setResults([{ testId: test.id, emoji: test.emoji, label: scored.label, summary: scored.summary }]);
+      setResults([
+        { testId: test.id, emoji: test.emoji, label: scored.label, summary: scored.summary },
+      ]);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "保存失败，再点一次试试");
     } finally {
@@ -82,7 +99,7 @@ function TestRunner() {
   const runBirthday = async () => {
     if (!birthDate) {
       toast.error("先去补充生日信息吧");
-      navigate({ to: "/onboarding" });
+      navigate({ to: "/onboarding", search: invite ? { invite } : {} });
       return;
     }
     setBusy(true);
@@ -96,7 +113,11 @@ function TestRunner() {
       } else {
         const b = computeBazi(birthDate);
         const label = `${b.pillar}年 · ${b.element}命`;
-        await save(test.id, { birth_date: birthDate }, { type: b.pillar, label, summary: b.trait, detail: b });
+        await save(
+          test.id,
+          { birth_date: birthDate },
+          { type: b.pillar, label, summary: b.trait, detail: b },
+        );
         setResults([{ testId: test.id, emoji: test.emoji, label, summary: b.trait }]);
       }
     } catch (err) {
@@ -111,7 +132,11 @@ function TestRunner() {
     try {
       await generateManual();
       toast.success("说明书已更新 ✨");
-      navigate({ to: "/manual" });
+      if (invite) {
+        navigate({ to: "/invite/$token", params: { token: invite } });
+      } else {
+        navigate({ to: "/manual" });
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "生成失败");
       setGenerating(false);
@@ -147,6 +172,7 @@ function TestRunner() {
             </button>
             <Link
               to="/home"
+              search={invite ? { invite } : {}}
               className="inline-flex items-center gap-1.5 rounded-full border border-input px-5 py-2.5 text-sm font-medium transition-colors hover:bg-secondary"
             >
               <ArrowLeft className="h-4 w-4" /> 更多测试
@@ -156,7 +182,11 @@ function TestRunner() {
               disabled={generating}
               className="btn-starlight inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold disabled:opacity-60"
             >
-              {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
+              {generating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <BookOpen className="h-4 w-4" />
+              )}
               更新我的说明书
             </button>
           </div>
@@ -178,7 +208,8 @@ function TestRunner() {
             {birthDate ? (
               <>
                 <p className="mt-5 rounded-xl bg-secondary/60 px-4 py-3 text-sm">
-                  将根据你的生日 <span className="font-semibold text-primary">{birthDate}</span> 自动推算
+                  将根据你的生日 <span className="font-semibold text-primary">{birthDate}</span>{" "}
+                  自动推算
                 </p>
                 <button
                   onClick={runBirthday}
@@ -219,6 +250,7 @@ function TestRunner() {
         <div className="flex items-center justify-between">
           <Link
             to="/home"
+            search={invite ? { invite } : {}}
             className="flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" /> 退出

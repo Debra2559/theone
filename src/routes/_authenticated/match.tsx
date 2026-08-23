@@ -1,4 +1,11 @@
-import { createFileRoute, redirect, useNavigate, Link } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  redirect,
+  useNavigate,
+  useRouterState,
+  Link,
+  Outlet,
+} from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -6,6 +13,7 @@ import {
   HeartFilled,
   X,
   Sparkles,
+  ArrowRight,
   MapPin,
   RotateCcw,
   ChevronRight,
@@ -73,7 +81,27 @@ function genderLabel(g: string) {
   return g === "female" ? "女生" : g === "male" ? "男生" : "保密";
 }
 
+const QUICK_QUESTIONS = [
+  {
+    prompt: "如果今晚突然多出 3 小时，你会把它留给？",
+    options: ["一个人安静回血", "找人聊到尽兴", "出门走走看世界", "做点小众爱好"],
+  },
+  {
+    prompt: "什么瞬间会让你对一个人产生好感？",
+    options: ["记得我的小细节", "有自己长期热爱的事", "接得住奇怪话题", "坦诚说出真实想法"],
+  },
+  {
+    prompt: "关系里，你最不希望对方误会你的哪一面？",
+    options: ["安静不等于冷淡", "独立不等于不需要爱", "慢热不等于没兴趣", "嘴硬其实很在意"],
+  },
+  {
+    prompt: "如果一起去一个不太热门的地方，你更想？",
+    options: ["逛一间小而怪的博物馆", "在海边待到日落", "找一家当地人吃的小店", "临时拐进一条小巷"],
+  },
+];
+
 function Match() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { candidates, hasData } = Route.useLoaderData() as {
     candidates: Candidate[];
     hasData: boolean;
@@ -82,6 +110,7 @@ function Match() {
   const [index, setIndex] = useState(0);
   const [pending, setPending] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [quickAnswers, setQuickAnswers] = useState<Record<string, string[]>>({});
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const fresh = candidates.filter((c) => !c.matched);
@@ -146,6 +175,31 @@ function Match() {
   }
   const tags =
     current && Array.isArray(current.persona.tags) ? (current.persona.tags as string[]) : [];
+  const manualText = (key: string) =>
+    typeof manual[key] === "string" ? String(manual[key]).trim() : "";
+  const extendedFacts = [
+    ["职业", manualText("occupation")],
+    ["行业", manualText("industry")],
+    ["学历", manualText("education")],
+    ["关系目标", manualText("goal")],
+    ["身高", manualText("height")],
+  ].filter((fact): fact is [string, string] => Boolean(fact[1]));
+  const lifeSlice = manualText("oneLiner") || current?.persona.bio || "";
+  const idealMatch = manualText("idealMatch");
+  const currentQuickAnswers = current ? (quickAnswers[current.persona.id] ?? []) : [];
+  const quickComplete = currentQuickAnswers.length >= QUICK_QUESTIONS.length;
+  const quickQuestion = QUICK_QUESTIONS[currentQuickAnswers.length % QUICK_QUESTIONS.length];
+
+  if (pathname === "/match/1v1") return <Outlet />;
+
+  const answerQuickQuestion = (answer: string) => {
+    if (!current || quickComplete) return;
+    setQuickAnswers((answers) => ({
+      ...answers,
+      [current.persona.id]: [...(answers[current.persona.id] ?? []), answer],
+    }));
+    toast.success("已写进你的相处画像");
+  };
 
   return (
     <AppShell>
@@ -168,13 +222,16 @@ function Match() {
             )}
           </div>
           <div className="flex items-center gap-2">
-            <Link
-              to="/match/1v1"
-              aria-label="进入 1v1 匹配"
-              className="group flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl border border-primary/15 bg-card/75 text-primary shadow-sm transition-transform hover:-translate-y-0.5 active:scale-95"
-            >
-              <Sparkles className="h-5 w-5 transition-transform group-hover:rotate-12" />
-              <span className="mt-0.5 text-[10px] font-semibold tracking-wide">1v1 匹配</span>
+            <Link to="/match/1v1" aria-label="进入 1v1 匹配" className="one-on-one-entry group">
+              <span className="one-on-one-entry-seal">
+                <Sparkles className="h-4 w-4 transition-transform group-hover:rotate-12" />
+              </span>
+              <span className="one-on-one-entry-copy">
+                <small>FOR ONE</small>
+                <strong>1v1 匹配</strong>
+                <span>只找一个人</span>
+              </span>
+              <ArrowRight className="one-on-one-entry-arrow h-4 w-4" />
             </Link>
             {visibleCandidates.length > 0 && current && (
               <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
@@ -283,6 +340,76 @@ function Match() {
                     </ul>
                   </section>
                 )}
+
+                {lifeSlice && (
+                  <section className="match-life-slice">
+                    <p className="eyebrow text-primary">TA 的生活切片</p>
+                    <p>{lifeSlice}</p>
+                  </section>
+                )}
+
+                {extendedFacts.length > 0 && (
+                  <section>
+                    <p className="eyebrow text-primary">TA 的生活坐标</p>
+                    <div className="match-extended-facts mt-2.5">
+                      {extendedFacts.map(([label, value]) => (
+                        <div key={label}>
+                          <span>{label}</span>
+                          <strong>{value}</strong>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {idealMatch && (
+                  <section className="match-ideal-match">
+                    <p className="eyebrow text-primary">TA 想遇见的关系</p>
+                    <p>{idealMatch}</p>
+                  </section>
+                )}
+
+                <section className="match-quick-questions">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="eyebrow text-primary">Quick Questions</p>
+                      <h3>让匹配多知道你一点</h3>
+                    </div>
+                    <span>
+                      {Math.min(currentQuickAnswers.length + 1, QUICK_QUESTIONS.length)} /{" "}
+                      {QUICK_QUESTIONS.length}
+                    </span>
+                  </div>
+                  {quickComplete ? (
+                    <div className="match-quick-complete">
+                      <span>✦</span>
+                      <p>你的隐藏偏好已收集完毕，下一次推荐会更懂你。</p>
+                    </div>
+                  ) : (
+                    <div className="match-quick-question">
+                      <p>{quickQuestion.prompt}</p>
+                      <div className="match-quick-options">
+                        {quickQuestion.options.map((option) => (
+                          <button
+                            key={option}
+                            type="button"
+                            onClick={() => answerQuickQuestion(option)}
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  <div className="match-quick-progress" aria-hidden>
+                    {QUICK_QUESTIONS.map((question, questionIndex) => (
+                      <i
+                        key={question.prompt}
+                        className={questionIndex < currentQuickAnswers.length ? "is-done" : ""}
+                      />
+                    ))}
+                  </div>
+                </section>
               </div>
             </div>
 

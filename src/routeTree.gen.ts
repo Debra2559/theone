@@ -22,6 +22,7 @@ import { Route as AuthenticatedMatchRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as InviteTokenRouteImport } from './routes/invite_.$token'
 import { Route as AuthenticatedCounselorThreadIdRouteImport } from './routes/_authenticated/counselor_.$threadId'
 import { Route as AuthenticatedMatch1v1RouteImport } from './routes/_authenticated/match/1v1'
 import { Route as AuthenticatedMatchMatchIdRouteImport } from './routes/_authenticated/match_.$matchId'
@@ -91,6 +92,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const InviteTokenRoute = InviteTokenRouteImport.update({
+  id: '/invite_/$token',
+  path: '/invite/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedCounselorThreadIdRoute =
   AuthenticatedCounselorThreadIdRouteImport.update({
     id: '/counselor_/$threadId',
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/api/chat': typeof ApiChatRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/counselor/$threadId': typeof AuthenticatedCounselorThreadIdRoute
   '/match/1v1': typeof AuthenticatedMatch1v1Route
   '/match/$matchId': typeof AuthenticatedMatchMatchIdRoute
@@ -146,6 +153,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/api/chat': typeof ApiChatRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/counselor/$threadId': typeof AuthenticatedCounselorThreadIdRoute
   '/match/1v1': typeof AuthenticatedMatch1v1Route
   '/match/$matchId': typeof AuthenticatedMatchMatchIdRoute
@@ -166,6 +174,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/api/chat': typeof ApiChatRoute
+  '/invite_/$token': typeof InviteTokenRoute
   '/_authenticated/counselor_/$threadId': typeof AuthenticatedCounselorThreadIdRoute
   '/_authenticated/match/1v1': typeof AuthenticatedMatch1v1Route
   '/_authenticated/match_/$matchId': typeof AuthenticatedMatchMatchIdRoute
@@ -186,6 +195,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/api/chat'
+    | '/invite/$token'
     | '/counselor/$threadId'
     | '/match/1v1'
     | '/match/$matchId'
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/profile'
     | '/api/chat'
+    | '/invite/$token'
     | '/counselor/$threadId'
     | '/match/1v1'
     | '/match/$matchId'
@@ -223,6 +234,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding'
     | '/_authenticated/profile'
     | '/api/chat'
+    | '/invite_/$token'
     | '/_authenticated/counselor_/$threadId'
     | '/_authenticated/match/1v1'
     | '/_authenticated/match_/$matchId'
@@ -236,6 +248,7 @@ export interface RootRouteChildren {
   HackathonMatchRoute: typeof HackathonMatchRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   ApiChatRoute: typeof ApiChatRoute
+  InviteTokenRoute: typeof InviteTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/invite_/$token': {
+      id: '/invite_/$token'
+      path: '/invite/$token'
+      fullPath: '/invite/$token'
+      preLoaderRoute: typeof InviteTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/counselor_/$threadId': {
       id: '/_authenticated/counselor_/$threadId'
       path: '/counselor/$threadId'
@@ -409,6 +429,7 @@ const rootRouteChildren: RootRouteChildren = {
   HackathonMatchRoute: HackathonMatchRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   ApiChatRoute: ApiChatRoute,
+  InviteTokenRoute: InviteTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -18,7 +18,7 @@ type RelationshipManual = {
 };
 
 // 从测试结果/说明书里提取用于打分的画像
-function extractManualLike(
+export function extractManualLike(
   resultMap: Record<string, { label?: string }>,
   manualContent: unknown,
 ): ManualLike {
@@ -45,9 +45,9 @@ type CandidatePersona = {
   city: string;
   avatar: string;
   tagline: string;
-  tags: string[];
-  manual: Record<string, unknown>;
-  bio: string;
+  tags: Json;
+  manual: Json;
+  bio?: string;
 };
 
 function profileField(profile: string, label: string) {
@@ -75,7 +75,10 @@ function normalizeGender(gender: string) {
 }
 
 function normalizeDatabasePersona(persona: CandidatePersona): CandidatePersona {
-  const manual = persona.manual ?? {};
+  const manual =
+    persona.manual && typeof persona.manual === "object" && !Array.isArray(persona.manual)
+      ? (persona.manual as Record<string, unknown>)
+      : {};
   const tags = Array.isArray(persona.tags) ? persona.tags : [];
   const oneLiner = typeof manual["oneLiner"] === "string" ? manual["oneLiner"] : "";
   return {
@@ -251,7 +254,14 @@ export const getMatch = createServerFn({ method: "GET" })
     if (match.user_id !== context.userId && match.matched_user_id !== context.userId) {
       throw new Error("无权查看");
     }
-    return match;
+    const partnerId = match.user_id === context.userId ? match.matched_user_id : match.user_id;
+    if (!partnerId) return { ...match, partner_profile: null };
+    const { data: partnerProfile } = await context.supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", partnerId)
+      .maybeSingle();
+    return { ...match, partner_profile: partnerProfile };
   });
 
 const REL_PROMPT = `你是「心动说明书」的关系分析师。根据两个人的个人说明书，生成一份好玩的「关系说明书」，帮两个正在互相了解的年轻人看懂彼此。
@@ -282,45 +292,81 @@ export const generateRelationshipManual = createServerFn({ method: "POST" })
       .eq("id", data.matchId)
       .single();
     if (error || !match) throw new Error("匹配不存在");
-    if (match.user_id !== context.userId) throw new Error("无权操作");
+    if (match.user_id !== context.userId && match.matched_user_id !== context.userId) {
+      throw new Error("无权操作");
+    }
 
-    const [{ data: profile }, { data: manualRow }, { data: results }] = await Promise.all([
-      context.supabase.from("profiles").select("*").eq("id", context.userId).maybeSingle(),
-      context.supabase
-        .from("user_manuals")
-        .select("content")
-        .eq("user_id", context.userId)
-        .maybeSingle(),
-      context.supabase.from("test_results").select("test_id, result").eq("user_id", context.userId),
-    ]);
-
-    const persona = match.personas as unknown as {
+    type Profile = {
       nickname: string;
       gender: string;
-      age: number;
+      age?: number;
       city: string;
-      tagline: string;
-      tags: unknown;
-      manual: unknown;
+      tagline?: string;
+      avatar: string;
+      bio: string;
     };
+    const readUser = async (userId: string) => {
+      const [{ data: profile }, { data: manualRow }, { data: results }] = await Promise.all([
+        context.supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+        context.supabase.from("user_manuals").select("content").eq("user_id", userId).maybeSingle(),
+        context.supabase.from("test_results").select("test_id, result").eq("user_id", userId),
+      ]);
+      return { profile, manual: manualRow?.content ?? {}, results: results ?? [] };
+    };
+
+    const a = await readUser(match.user_id);
+    const aProfile = a.profile as Profile | null;
+    let bProfile: Profile;
+    let bManual: unknown;
+    let bResults: typeof a.results;
+    if (match.matched_user_id) {
+      const b = await readUser(match.matched_user_id);
+      if (!b.profile) throw new Error("匹配对象资料不完整");
+      bProfile = b.profile as Profile;
+      bManual = b.manual;
+      bResults = b.results;
+    } else {
+      if (match.user_id !== context.userId) throw new Error("无权操作");
+      const persona = match.personas as unknown as {
+        nickname: string;
+        gender: string;
+        age: number;
+        city: string;
+        tagline: string;
+        tags: unknown;
+        manual: unknown;
+        avatar: string;
+        bio?: string;
+      };
+      bProfile = { ...persona, bio: persona.bio ?? "" };
+      bManual = persona.manual ?? {};
+      bResults = [];
+    }
+
+    const aResultMap = Object.fromEntries(
+      a.results.map((r) => [r.test_id, r.result as { label?: string }]),
+    );
+    const bResultMap = Object.fromEntries(
+      bResults.map((r) => [r.test_id, r.result as { label?: string }]),
+    );
+    const aLike = extractManualLike(aResultMap, a.manual);
+    const bLike = extractManualLike(bResultMap, bManual);
+
+    const describe = (person: Profile, manual: unknown, results: typeof a.results) =>
+      `${person.nickname}，${person.gender || "保密"}，${person.age ? `${person.age}岁，` : ""}${person.city || "未知"}，「${person.tagline || person.bio || "一位值得了解的人"}」\n个人说明书：${JSON.stringify(manual ?? {})}\n测试速览：${JSON.stringify(Object.fromEntries(results.map((r) => [r.test_id, r.result])))}`;
 
     let manual: RelationshipManual;
     try {
       const ai = await generateJson<RelationshipManual>(
         REL_PROMPT,
-        `A（用户）：${profile?.nickname ?? "TA"}，${profile?.gender || ""}，${profile?.city || ""}
-A 的个人说明书：${JSON.stringify(manualRow?.content ?? {})}
-A 的测试速览：${JSON.stringify(Object.fromEntries((results ?? []).map((r) => [r.test_id, r.result])))}
-
-B（匹配对象）：${persona.nickname}，${persona.gender}，${persona.age}岁，${persona.city}，「${persona.tagline}」
-B 的个人说明书：${JSON.stringify(persona.manual ?? {})}`,
+        `A：${describe(aProfile ?? { nickname: "你", gender: "", city: "", avatar: "", bio: "" }, a.manual, a.results)}\n\nB：${describe(bProfile, bManual, bResults)}`,
       );
       if (!ai.title || !Array.isArray(ai.chemistry)) throw new Error("bad shape");
       manual = ai;
     } catch {
-      const a = profile?.nickname ?? "你";
+      const aName = aProfile?.nickname ?? "你";
       manual = {
-        title: `《${a} × ${persona.nickname} 的关系说明书》`,
+        title: `《${aName} × ${bProfile.nickname} 的关系说明书》`,
         verdict: "一段值得慢慢了解的关系",
         chemistry: (match.highlights as string[] | null) ?? ["合拍指数不错，值得深入了解"],
         friction: ["还在了解阶段，多聊聊才知道"],
