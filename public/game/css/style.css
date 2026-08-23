@@ -261,7 +261,10 @@ body {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto; overscroll-behavior: contain;
-  padding: 12px 2px 320px;
+  /* 左右 6px：overflow-y:auto 会隐式裁剪 x 方向，头像情绪动效
+     （fx-bounce-big scale 1.08 / fx-wiggle rotate）向左溢出 1~2px，
+     2px padding 会把左边缘裁掉一小块；加大到 6px 后动效有呼吸空间 */
+  padding: 12px 6px 320px;
   display: flex; flex-direction: column; gap: 14px;
   scroll-behavior: smooth;
   -webkit-mask-image: linear-gradient(180deg, #000 0, #000 calc(100% - 50px), transparent 100%);
@@ -653,7 +656,10 @@ details.payload pre {
 /* 开心：轻快地跳（delight 幅度更大、带光晕） */
 .fx-happy  { animation: fx-bounce .9s cubic-bezier(.34,1.56,.64,1); }
 .fx-delight { animation: fx-bounce-big 1s cubic-bezier(.34,1.56,.64,1); }
-.fx-delight .dlg-avatar-img { box-shadow: 0 0 0 3px oklch(0.62 0.1 57 / 55%), 0 4px 16px oklch(0.62 0.1 57 / 45%); }
+/* 开心/害羞/生气的头像光圈：3px 实心环在头像外 0~3px 区域填充，会让头像圆周
+   显得被「框住一块」（用户反馈「头像左边被遮住一小块」），
+   收窄为 1.5px 紧贴头像边缘的细光环，保留 14~16px 模糊外阴影（柔和发光） */
+.fx-delight .dlg-avatar-img { box-shadow: 0 0 0 1.5px oklch(0.62 0.1 57 / 50%), 0 4px 16px oklch(0.62 0.1 57 / 45%); }
 @keyframes fx-bounce {
   0%, 100% { transform: translateY(0); }
   30% { transform: translateY(-7px); }
@@ -677,7 +683,7 @@ details.payload pre {
 
 /* 生气：快速左右震动 + 微红 */
 .fx-angry { animation: fx-shake .7s cubic-bezier(.36,.07,.19,.97); }
-.fx-angry .dlg-avatar-img { box-shadow: 0 0 0 3px oklch(0.55 0.19 25 / 50%), 0 4px 14px oklch(0.55 0.19 25 / 40%); }
+.fx-angry .dlg-avatar-img { box-shadow: 0 0 0 1.5px oklch(0.55 0.19 25 / 45%), 0 4px 14px oklch(0.55 0.19 25 / 40%); }
 @keyframes fx-shake {
   10%, 90% { transform: translateX(-2px); }
   20%, 80% { transform: translateX(3px); }
@@ -803,7 +809,7 @@ details.payload pre {
 
 /* ---------- 害羞：轻扭 + 粉晕 ---------- */
 .fx-shy { animation: fx-wiggle 1.1s ease-in-out; }
-.fx-shy .dlg-avatar-img { box-shadow: 0 0 0 3px oklch(0.72 0.13 350 / 45%), 0 4px 14px oklch(0.72 0.13 350 / 38%); }
+.fx-shy .dlg-avatar-img { box-shadow: 0 0 0 1.5px oklch(0.72 0.13 350 / 40%), 0 4px 14px oklch(0.72 0.13 350 / 38%); }
 @keyframes fx-wiggle {
   0%, 100% { transform: rotate(0) translateY(0); }
   20% { transform: rotate(-4deg) translateY(-1px); }
