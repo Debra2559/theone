@@ -2,6 +2,18 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { generateJson, buildManualFallback, MANUAL_PROMPT, type ManualContent } from "./ai.server";
+import { loveGameAnswersSchema, loveGameResultSchema } from "./love-game-schema";
+
+const testIdSchema = z.enum([
+  "mbti",
+  "attachment",
+  "love-language",
+  "needs",
+  "element",
+  "love-dialogue",
+  "zodiac",
+  "bazi",
+]);
 
 export const getMyProfile = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -60,9 +72,28 @@ export const saveTestResult = createServerFn({ method: "POST" })
   .inputValidator((d) =>
     z
       .object({
-        test_id: z.string(),
-        answers: z.record(z.string(), z.unknown()),
-        result: z.record(z.string(), z.unknown()),
+        test_id: testIdSchema,
+        answers: z.record(z.string().min(1).max(80), z.unknown()),
+        result: z.record(z.string().min(1).max(80), z.unknown()),
+      })
+      .refine((data) => JSON.stringify(data.answers).length <= 50_000, "测试答案过大")
+      .refine((data) => JSON.stringify(data.result).length <= 50_000, "测试结果过大")
+      .superRefine((data, ctx) => {
+        if (data.test_id !== "love-dialogue") return;
+        if (!loveGameAnswersSchema.safeParse(data.answers).success) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["answers"],
+            message: "恋爱剧场答案格式无效",
+          });
+        }
+        if (!loveGameResultSchema.safeParse(data.result).success) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["result"],
+            message: "恋爱剧场画像格式无效",
+          });
+        }
       })
       .parse(d),
   )
@@ -128,14 +159,22 @@ export const generateManual = createServerFn({ method: "POST" })
             dimensions?:
               | Array<{ key?: string; label?: string; value?: number; anchor?: string }>
               | Record<string, number>;
-            dimensions_detail?: Array<{ key?: string; label?: string; value?: number; anchor?: string }>;
+            dimensions_detail?: Array<{
+              key?: string;
+              label?: string;
+              value?: number;
+              anchor?: string;
+            }>;
             communicate_password?: string[];
             relationship_pattern?: string[];
             friction_alerts?: string[];
             hidden_strengths?: string[];
             ideal_partner?: { archetype_name?: string; tagline?: string; match_points?: string[] };
             evidence?: Record<string, Array<{ scene?: string; choice?: string; note?: string }>>;
-            stage_stats?: Record<string, { label?: string; count?: number; dims?: Record<string, number> }>;
+            stage_stats?: Record<
+              string,
+              { label?: string; count?: number; dims?: Record<string, number> }
+            >;
           };
         }
       | undefined;
@@ -183,8 +222,12 @@ export const generateManual = createServerFn({ method: "POST" })
           (d.relationship_pattern ?? []).length
             ? `关系模式：${(d.relationship_pattern ?? []).join("；")}`
             : "",
-          (d.friction_alerts ?? []).length ? `摩擦预警：${(d.friction_alerts ?? []).join("；")}` : "",
-          (d.hidden_strengths ?? []).length ? `隐藏优点：${(d.hidden_strengths ?? []).join("；")}` : "",
+          (d.friction_alerts ?? []).length
+            ? `摩擦预警：${(d.friction_alerts ?? []).join("；")}`
+            : "",
+          (d.hidden_strengths ?? []).length
+            ? `隐藏优点：${(d.hidden_strengths ?? []).join("；")}`
+            : "",
           d.ideal_partner?.archetype_name
             ? `理想搭档：${d.ideal_partner.archetype_name}——${d.ideal_partner.tagline ?? ""}`
             : "",
@@ -196,21 +239,34 @@ export const generateManual = createServerFn({ method: "POST" })
       };
     }
 
+    // AI 只接收蒸馏摘要；完整画像保留给兜底说明书，不重复进入模型上下文。
+    const aiResultMap = {
+      ...resultMap,
+      ...(resultMap["love-dialogue"]
+        ? {
+            "love-dialogue": {
+              type: resultMap["love-dialogue"].type,
+              label: resultMap["love-dialogue"].label,
+              summary: resultMap["love-dialogue"].summary,
+            },
+          }
+        : {}),
+    };
+
     let content: ManualContent;
     try {
       content = await generateJson<ManualContent>(
         MANUAL_PROMPT,
-        `用户信息：昵称 ${nickname}，性别 ${profile?.gender || "保密"}，城市 ${profile?.city || "未知"}，个人简介「${profile?.bio || "无"}」\n\n测试结果：\n${JSON.stringify(resultMap, null, 2)}`,
+        `用户信息：昵称 ${nickname}，性别 ${profile?.gender || "保密"}，城市 ${profile?.city || "未知"}，个人简介「${profile?.bio || "无"}」\n\n测试结果：\n${JSON.stringify(aiResultMap, null, 2)}`,
       );
       if (!content.title || !Array.isArray(content.sections)) throw new Error("bad shape");
     } catch {
       content = buildManualFallback(nickname, resultMap);
     }
 
-    const { error } = await context.supabase.from("user_manuals").upsert(
-      { user_id: context.userId, content },
-      { onConflict: "user_id" },
-    );
+    const { error } = await context.supabase
+      .from("user_manuals")
+      .upsert({ user_id: context.userId, content }, { onConflict: "user_id" });
     if (error) throw new Error(error.message);
     return content;
   });
