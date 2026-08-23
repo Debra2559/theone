@@ -56,14 +56,58 @@ export function buildManualFallback(
   if (zodiac?.label) badges.push(zodiac.label);
   if (loveGame?.label) badges.push(loveGame.label);
 
+  /* 恋爱人格剧场（love-dialogue）：detail 里的八维分数 / 沟通密码 / 关系模式 /
+     摩擦预警 / 理想搭档。从 detail 提取结构化分点（每点一句），
+     不直接把超长 summary 整段塞进一个 point，避免卡片溢出、阅读体验差 */
+  const gd = (loveGame?.detail ?? {}) as {
+    archetype_name?: string;
+    sub_style?: string;
+    dimensions?:
+      | Array<{ key?: string; label?: string; value?: number; anchor?: string }>
+      | Record<string, number>;
+    dimensions_detail?: Array<{ key?: string; label?: string; value?: number; anchor?: string }>;
+    communicate_password?: string[];
+    relationship_pattern?: string[];
+    friction_alerts?: string[];
+    ideal_partner?: { archetype_name?: string; tagline?: string; match_points?: string[] };
+  };
+  const dimList: Array<{ key?: string; label?: string; value?: number; anchor?: string }> =
+    gd.dimensions_detail ??
+    (Array.isArray(gd.dimensions)
+      ? gd.dimensions
+      : Object.entries(gd.dimensions ?? {}).map(([key, value]) => ({
+          key,
+          label: key,
+          value: value as number,
+          anchor: "",
+        })));
+  const highDims = dimList
+    .filter((d) => (d.value ?? 0) >= 62)
+    .sort((a, b) => (b.value ?? 0) - (a.value ?? 0))
+    .slice(0, 2);
+  const lowDims = dimList
+    .filter((d) => (d.value ?? 0) <= 38)
+    .sort((a, b) => (a.value ?? 0) - (b.value ?? 0))
+    .slice(0, 1);
+  const dimPoints = [
+    ...highDims.map((d) => `${d.label ?? d.key}：${d.anchor || "突出"}（${Math.round(d.value ?? 0)}）`),
+    ...lowDims.map((d) => `${d.label ?? d.key}：${d.anchor || "偏低"}（${Math.round(d.value ?? 0)}）`),
+  ].slice(0, 3);
+  const gameArchetype = gd.archetype_name
+    ? `剧场人格：${gd.archetype_name}${gd.sub_style ? `（${gd.sub_style}）` : ""}——由 30 幕剧情选择绘出`
+    : loveGame?.label
+      ? `剧场人格：${loveGame.label}——由 30 幕剧情选择绘出`
+      : "";
+
   const sections: ManualSection[] = [
     {
       icon: "🎨",
       title: "性格底色",
       points: [
-        mbti?.summary || loveGame?.summary || "多面而独特，等待更多测试来描绘",
+        gameArchetype || mbti?.summary || loveGame?.summary || "多面而独特，等待更多测试来描绘",
+        ...dimPoints,
         element?.summary ? `四元素气质：${element.label}——${element.summary}` : "完成四元素测试可解锁",
-      ],
+      ].filter(Boolean),
     },
     {
       icon: "💗",
@@ -71,7 +115,7 @@ export function buildManualFallback(
       points: [
         attachment?.summary ? `依恋类型：${attachment.label}——${attachment.summary}` : "完成依恋测试可解锁",
         loveLanguage?.summary ? `爱的语言：${loveLanguage.label}——${loveLanguage.summary}` : "完成爱的语言测试可解锁",
-        loveGame?.label ? `剧场人格：${loveGame.label}——由 30 幕剧情选择绘出` : "玩一局恋爱人格剧场，画像会更立体",
+        ...(gd.communicate_password ?? []).slice(0, 3).map((p) => `沟通密码：${p}`),
       ].filter(Boolean),
     },
     {
@@ -79,20 +123,33 @@ export function buildManualFallback(
       title: "需求说明",
       points: [
         needs?.summary ? `${needs.label}——${needs.summary}` : "完成高低需求测试可解锁",
-      ],
+        ...dimList
+          .filter((d) => d.key === "intimacy" && d.value !== undefined)
+          .map((d) => `亲密度需求：${d.value >= 55 ? "喜欢紧密的联结" : "需要舒适的距离"}（${Math.round(d.value ?? 0)}）`),
+      ].filter(Boolean),
+    },
+    {
+      icon: "⚠️",
+      title: "注意事项",
+      points: (gd.friction_alerts ?? []).slice(0, 3).length
+        ? (gd.friction_alerts ?? []).slice(0, 3)
+        : ["先从尊重彼此的节奏开始"],
     },
     {
       icon: "🧭",
       title: "相处攻略",
       points: [
-        "先从尊重彼此的节奏开始",
+        ...(gd.relationship_pattern ?? []).slice(0, 3).map((p) => `关系模式：${p}`),
+        ...(gd.communicate_password ?? []).slice(0, 1).map((p) => `沟通密码：${p}`),
         "多做几个测试，这里的建议会越来越准",
-      ],
+      ].filter(Boolean),
     },
     {
       icon: "💘",
       title: "理想搭档",
-      points: ["愿意认真读完这份说明书的人，已经赢了一半"],
+      points: (gd.ideal_partner?.match_points ?? []).length
+        ? (gd.ideal_partner?.match_points ?? []).slice(0, 3)
+        : ["愿意认真读完这份说明书的人，已经赢了一半"],
     },
   ];
 

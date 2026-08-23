@@ -445,7 +445,11 @@
   color: var(--report-ink);
   font-size: 0.74rem;
   line-height: 1.7;
+  /* 超长条目（如兜底摘要）自动换行，避免溢出卡片 */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
+.social-report-points li > span:last-child { min-width: 0; }
 
 .social-report-points li:last-child {
   border-bottom: 1px solid rgba(91, 74, 61, 0.1);
@@ -1691,7 +1695,11 @@
   color: oklch(0.3 0.03 315);
   font-size: 0.78rem;
   line-height: 1.75;
+  /* 超长条目自动换行，避免溢出卡片 */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
+.social-report-points li > span:last-child { min-width: 0; }
 
 .social-report-points li:last-child {
   border-bottom: 1px solid oklch(0.36 0.04 315 / 12%);
