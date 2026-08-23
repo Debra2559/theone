@@ -1,5 +1,6 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Check,
@@ -10,8 +11,10 @@ import {
 } from "@/components/app-icons";
 import { getMyProfile } from "@/lib/app.functions";
 import { getMatchCandidates } from "@/lib/match.functions";
+import { clearOneOnOneLock, getOneOnOneLock, setOneOnOneLock } from "@/lib/one-on-one";
 import { AppShell } from "@/components/app-shell";
 import { UserAvatar } from "@/components/user-avatar";
+import foxAsset from "@/assets/fox.png";
 
 export const Route = createFileRoute("/_authenticated/match/1v1")({
   head: () => ({
@@ -49,17 +52,53 @@ function OneOnOne() {
   const avatar = candidate?.persona.avatar;
   const currentNickname = profile?.nickname ?? "你";
 
+  useEffect(() => {
+    const lock = getOneOnOneLock();
+    if (!lock) return;
+    setWish(lock.wish);
+    setStage("bridge");
+  }, []);
+
+  const startOneOnOne = () => {
+    if (!wish.trim()) return;
+    setOneOnOneLock({
+      candidateId: candidate?.persona.id ?? null,
+      candidateNickname: nickname,
+      wish: wish.trim(),
+      startedAt: new Date().toISOString(),
+    });
+    setStage("pull");
+  };
+
+  const releaseOneOnOne = () => {
+    clearOneOnOneLock();
+    setWish("");
+    setStage("notice");
+    toast.success("已解除 1v1 专注，可以重新浏览推荐");
+  };
+
   return (
     <AppShell>
       <div className="relative min-h-[calc(100dvh-9.5rem)] overflow-hidden">
         <header className="flex items-start gap-3">
-          <Link
-            to="/match"
-            aria-label="返回推荐"
-            className="mt-0.5 rounded-full p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
+          {stage === "notice" || stage === "brief" ? (
+            <Link
+              to="/match"
+              aria-label="返回推荐"
+              className="mt-0.5 rounded-full p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={releaseOneOnOne}
+              aria-label="解除 1v1"
+              className="mt-0.5 rounded-full p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+          )}
           <div>
             <p className="eyebrow text-primary">One to One</p>
             <h1 className="mt-1 font-display text-[28px] font-semibold">只聊这一个人</h1>
@@ -67,35 +106,47 @@ function OneOnOne() {
         </header>
 
         {stage === "notice" && (
-          <section className="one-on-one-panel mt-7 p-6 sm:p-8">
-            <div className="one-on-one-seal">
-              <HeartFilled className="h-7 w-7" />
-            </div>
-            <p className="eyebrow mt-6 text-primary">A little promise</p>
-            <h2 className="mt-2 font-display text-3xl font-semibold">给这次相遇一封告知信</h2>
-            <p className="mt-4 text-sm leading-7 text-muted-foreground">
-              进入 1v1 后，你和 {nickname}{" "}
-              会被放进同一座小桥边的房间。聊这个人的时候，暂时不能切换到其他人。
-            </p>
-            <div className="mt-5 space-y-2.5 rounded-2xl bg-secondary/60 p-4 text-sm leading-6">
-              <p className="flex gap-2">
-                <Check className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                你可以先写下这次想了解的事
+          <section className="one-on-one-note-stage mt-6">
+            <article className="one-on-one-note">
+              <span className="one-on-one-note-tape" aria-hidden />
+              <div className="one-on-one-note-heading">
+                <span className="one-on-one-note-pin">
+                  <HeartFilled className="h-4 w-4" />
+                </span>
+                <div>
+                  <p className="eyebrow text-primary">A little promise</p>
+                  <h2>给想认真认识一个人的你</h2>
+                </div>
+              </div>
+              <div className="one-on-one-note-illustration">
+                <div>
+                  <p>一次只找一个人</p>
+                  <strong>深度匹配</strong>
+                </div>
+                <img src={foxAsset} alt="狐军师插画" />
+              </div>
+              <p className="one-on-one-note-copy">
+                1v1
+                会根据你的测试、资料和诉求，帮你深度检索最匹配的那个人，并生成你们两人的专属说明书。
               </p>
-              <p className="flex gap-2">
-                <Check className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                本次只围绕 {nickname} 展开
-              </p>
-              <p className="flex gap-2">
-                <Check className="mt-1 h-4 w-4 shrink-0 text-primary" />
-                结束 1v1 后，随时可以回到推荐
-              </p>
-            </div>
+              <div className="one-on-one-note-rules">
+                <p>
+                  <Check /> 这次只围绕 {nickname} 展开
+                </p>
+                <p>
+                  <Check /> 确认后暂时不能查看或聊天其他人
+                </p>
+                <p>
+                  <Check /> 想换人时，点击「解除 1v1」即可退出
+                </p>
+              </div>
+              <p className="one-on-one-note-footer">把注意力交给一个人，故事才会真正开始。</p>
+            </article>
             <button
               onClick={() => setStage("brief")}
-              className="btn-starlight mt-7 flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold"
+              className="btn-starlight one-on-one-note-cta mt-5 flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold"
             >
-              我知道了，写下诉求
+              写下我的诉求
               <Sparkles className="h-4 w-4" />
             </button>
           </section>
@@ -129,7 +180,7 @@ function OneOnOne() {
             </label>
             <button
               disabled={!wish.trim()}
-              onClick={() => setStage("pull")}
+              onClick={startOneOnOne}
               className="btn-starlight mt-5 flex w-full items-center justify-center gap-2 rounded-full py-3 text-sm font-semibold disabled:cursor-not-allowed disabled:opacity-45"
             >
               让丘比特出发
@@ -196,12 +247,6 @@ function OneOnOne() {
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">“{wish}”</p>
                 <div className="mt-4 flex gap-2">
                   <Link
-                    to="/match"
-                    className="flex-1 rounded-full border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground"
-                  >
-                    回到推荐
-                  </Link>
-                  <Link
                     to="/counselor"
                     className="btn-starlight flex flex-1 items-center justify-center gap-1 rounded-full px-4 py-2.5 text-sm font-semibold"
                   >
@@ -209,6 +254,13 @@ function OneOnOne() {
                     <MessageCircleHeart className="h-4 w-4" />
                   </Link>
                 </div>
+                <button
+                  type="button"
+                  onClick={releaseOneOnOne}
+                  className="mt-3 text-xs text-muted-foreground underline underline-offset-4 transition-colors hover:text-foreground"
+                >
+                  解除 1v1，重新浏览推荐
+                </button>
               </div>
             )}
           </section>

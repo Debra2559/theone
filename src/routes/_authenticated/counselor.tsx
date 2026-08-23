@@ -1,11 +1,12 @@
 import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   BookOpen,
   ChevronRight,
   Filter,
   Loader2,
+  Lock,
   MessageCircleHeart,
   Plus,
   Search,
@@ -16,6 +17,7 @@ import { getMyProfile } from "@/lib/app.functions";
 import { createThread, deleteThread, listThreads } from "@/lib/counselor.functions";
 import { AppShell, RouteError } from "@/components/app-shell";
 import { UserAvatar } from "@/components/user-avatar";
+import { clearOneOnOneLock, getOneOnOneLock, subscribeToOneOnOneLock } from "@/lib/one-on-one";
 import {
   Dialog,
   DialogContent,
@@ -78,6 +80,9 @@ function Counselor() {
   const [situation, setSituation] = useState("");
   const [busy, setBusy] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [oneOnOneLock, setOneOnOneLock] = useState(() => getOneOnOneLock());
+
+  useEffect(() => subscribeToOneOnOneLock(() => setOneOnOneLock(getOneOnOneLock())), []);
 
   const matchThreads = useMemo(
     () => threads.filter((thread) => thread.context_type === "match").slice(0, 3),
@@ -130,6 +135,46 @@ function Counselor() {
       setDeletingId(null);
     }
   };
+
+  if (oneOnOneLock) {
+    return (
+      <AppShell>
+        <div className="one-on-one-chat-lock mt-8">
+          <div className="one-on-one-chat-lock-icon">
+            <Lock className="h-6 w-6" />
+          </div>
+          <p className="eyebrow mt-5 text-primary">One to One focus</p>
+          <h1 className="mt-2 font-display text-3xl font-semibold">
+            先专心认识 {oneOnOneLock.candidateNickname}
+          </h1>
+          <p className="mt-3 text-sm leading-7 text-muted-foreground">
+            1v1 进行中，其他人的聊天入口暂时收起。等你们完成这次相遇，再决定要不要继续认识更多人。
+          </p>
+          <div className="one-on-one-chat-lock-wish mt-5">
+            <span>你写下的诉求</span>
+            <p>“{oneOnOneLock.wish}”</p>
+          </div>
+          <Link
+            to="/match/1v1"
+            className="btn-starlight mt-6 flex w-full items-center justify-center rounded-full px-4 py-3 text-sm font-semibold"
+          >
+            回到 1v1 房间
+          </Link>
+          <button
+            type="button"
+            onClick={() => {
+              clearOneOnOneLock();
+              setOneOnOneLock(null);
+              toast.success("已解除 1v1 专注，可以重新浏览推荐");
+            }}
+            className="mt-4 w-full text-xs text-muted-foreground underline underline-offset-4"
+          >
+            解除 1v1，重新浏览推荐
+          </button>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>

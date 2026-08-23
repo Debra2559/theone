@@ -60,6 +60,7 @@ type ManualContent = {
 type ReportChapter = {
   icon: string;
   title: string;
+  navTitle: string;
   subtitle: string;
   points: string[];
   kind?: "points" | "traits";
@@ -174,6 +175,7 @@ function Manual() {
     {
       icon: "✦",
       title: "这份画像是怎么来的？",
+      navTitle: "画像来源",
       subtitle: "每一次选择，都在勾勒真实的你。",
       points:
         measuredTests.length > 0
@@ -184,6 +186,7 @@ function Manual() {
     {
       icon: "✧",
       title: "你的社交闪光点",
+      navTitle: "闪光点",
       subtitle: "这些是你在关系中自然发亮的部分。",
       points: personalitySection?.points?.slice(0, 4) ?? [
         m.oneLiner ?? "你有自己的节奏，也有值得被看见的光。",
@@ -193,6 +196,7 @@ function Manual() {
     {
       icon: "◌",
       title: "你在社交里的边界感",
+      navTitle: "边界感",
       subtitle: "边界不是拒绝靠近，而是让靠近变得舒服。",
       points: boundarySection?.points?.slice(0, 3) ?? [
         resultMap["attachment"]?.summary ?? "你需要先建立信任，再把更柔软的一面交出来。",
@@ -203,6 +207,7 @@ function Manual() {
     {
       icon: "◒",
       title: "你在关系里是什么样的？",
+      navTitle: "关系模式",
       subtitle: "亲密关系，是你的另一种语言。",
       points:
         relationshipSection?.points?.slice(0, 4) ??
@@ -216,6 +221,7 @@ function Manual() {
     {
       icon: "◈",
       title: "五维社交特质画像",
+      navTitle: "五维画像",
       subtitle: "用几个关键词，把你的社交 DNA 摆在桌面上。",
       points: reportTraits.map(([label, value]) => `${label} · ${value}`),
       kind: "traits",
@@ -224,6 +230,7 @@ function Manual() {
     {
       icon: "✦",
       title: "给你的社交小提示",
+      navTitle: "小提示",
       subtitle: "不必改变自己，只要把合适的信号发出去。",
       points: adviceSection?.points?.slice(0, 3) ?? [
         "在熟悉的兴趣场景里主动一点，你的魅力会更自然地出现。",
@@ -353,7 +360,7 @@ function Manual() {
                         {reportChapters.map((section, index) => (
                           <a key={`${section.title}-${index}`} href={`#report-chapter-${index}`}>
                             <small>{String(index + 1).padStart(2, "0")}</small>
-                            <span>{section.title.replace(/[？?]/g, "")}</span>
+                            <span>{section.navTitle}</span>
                           </a>
                         ))}
                       </div>
