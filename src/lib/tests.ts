@@ -10,7 +10,7 @@ export type TestDef = {
   category: "基础测试" | "增值测试";
   desc: string;
   minutes: string;
-  kind: "quiz" | "birthday";
+  kind: "quiz" | "birthday" | "game";
   resultKey: string; // 写入说明书的字段名
   questions: QuizQuestion[];
   // 每个可能结果的展示文案
@@ -279,6 +279,18 @@ export const TESTS: TestDef[] = [
         { text: "束缚", score: { air: 1 } },
         { text: "不靠谱", score: { earth: 1 } } ] },
     ],
+  },
+  {
+    id: "love-dialogue",
+    name: "恋爱人格剧场",
+    emoji: "🎭",
+    category: "增值测试",
+    desc: "30 幕沉浸式对话剧情，玩着玩着就画出了你的爱情人格画像",
+    minutes: "约 12 分钟",
+    kind: "game",
+    resultKey: "loveDialogue",
+    results: {},
+    questions: [],
   },
   {
     id: "zodiac",

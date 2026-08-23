@@ -27,6 +27,7 @@ export const Route = createFileRoute("/_authenticated/tests_/$testId")({
   loader: async ({ params }) => {
     const test = getTest(params.testId);
     if (!test) throw notFound();
+    if (test.kind === "game") throw redirect({ to: "/game" }); // 剧场类测试走独立游戏页
     const profile = await getMyProfile();
     if (!profile?.onboarding_done) throw redirect({ to: "/onboarding" });
     return { test, birthDate: profile.birth_date ?? null };

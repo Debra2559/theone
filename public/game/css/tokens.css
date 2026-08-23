@@ -1,0 +1,39 @@
+/* =========================================================================
+ * tokens.css — 共享设计令牌（与 theone App「心动说明书」设计系统同源）
+ * 源头：src/styles.css 的 :root。App 侧修改主题时请手工同步此文件。
+ * 暖纸底 + 墨紫衬线 + 哑光鸢尾紫 + 陶土金
+ * ========================================================================= */
+:root {
+  /* 暖纸底 */
+  --paper: oklch(0.965 0.014 82);
+  --paper-card: oklch(0.995 0.006 88);
+  /* 深墨紫（前景/正文） */
+  --ink: oklch(0.27 0.03 315);
+  --ink-soft: oklch(0.49 0.025 315);
+  /* 哑光鸢尾紫（主色） */
+  --primary: oklch(0.48 0.1 306);
+  /* 深墨紫（按钮，btn-starlight 底色） */
+  --ink-btn: oklch(0.29 0.04 315);
+  /* 陶土金（重点/高分点缀） */
+  --accent: oklch(0.62 0.1 57);
+  /* 亚麻灰紫（低层级背景） */
+  --secondary: oklch(0.925 0.018 300);
+  --border-soft: oklch(0.875 0.018 300);
+  /* 圆角体系 */
+  --radius: 0.82rem;
+  --radius-card: 1.18rem;
+  /* 字体体系 */
+  --font-display: "Cormorant Garamond", "Noto Serif SC", "Songti SC", "STSong", serif;
+  --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  /* dreamy-card 柔影 */
+  --shadow-card:
+    0 1px 0 oklch(1 0 0 / 75%) inset,
+    0 1px 2px oklch(0.4 0.04 315 / 5%),
+    0 20px 42px -28px oklch(0.34 0.05 315 / 26%);
+  /* 纸张纤维纹理 */
+  --paper-grain:
+    repeating-linear-gradient(0deg, transparent 0 3px, oklch(0.3 0.04 300 / 1.5%) 3px 4px),
+    repeating-linear-gradient(90deg, transparent 0 5px, oklch(0.3 0.04 300 / 1%) 5px 6px);
+  /* 顶栏渐变条（primary → secondary → accent） */
+  --topline: linear-gradient(90deg, var(--primary), var(--secondary), var(--accent));
+}
