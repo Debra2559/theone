@@ -47,19 +47,21 @@ export function buildManualFallback(
   const needs = get("needs");
   const element = get("element");
   const zodiac = get("zodiac");
+  const loveGame = get("love-dialogue");
   if (mbti?.label) badges.push(mbti.label.split(" · ")[0] ?? mbti.label);
   if (attachment?.label) badges.push(attachment.label);
   if (loveLanguage?.label) badges.push(loveLanguage.label);
   if (needs?.label) badges.push(needs.label);
   if (element?.label) badges.push(element.label);
   if (zodiac?.label) badges.push(zodiac.label);
+  if (loveGame?.label) badges.push(loveGame.label);
 
   const sections: ManualSection[] = [
     {
       icon: "🎨",
       title: "性格底色",
       points: [
-        mbti?.summary || "多面而独特，等待更多测试来描绘",
+        mbti?.summary || loveGame?.summary || "多面而独特，等待更多测试来描绘",
         element?.summary ? `四元素气质：${element.label}——${element.summary}` : "完成四元素测试可解锁",
       ],
     },
@@ -69,7 +71,8 @@ export function buildManualFallback(
       points: [
         attachment?.summary ? `依恋类型：${attachment.label}——${attachment.summary}` : "完成依恋测试可解锁",
         loveLanguage?.summary ? `爱的语言：${loveLanguage.label}——${loveLanguage.summary}` : "完成爱的语言测试可解锁",
-      ],
+        loveGame?.label ? `剧场人格：${loveGame.label}——由 30 幕剧情选择绘出` : "玩一局恋爱人格剧场，画像会更立体",
+      ].filter(Boolean),
     },
     {
       icon: "🔋",
@@ -108,19 +111,20 @@ export const MANUAL_PROMPT = `你是一位温暖又有洞察力的性格分析�
 - 用中文，语气年轻、温暖、具体，避免空泛的星座套话
 - 每个 points 条目 15-40 字，要具体可感，像朋友的观察而不是报告
 - 指出优点，也温柔地指出 1-2 个「注意事项」（雷区/小缺点）
+- 若测试结果里有「恋爱人格剧场」（love-dialogue）：它是用户玩 30 幕剧情对话得出的画像，含八维分数、沟通密码、关系模式、摩擦预警与「代表性选择」证据。请把它当作最重要的行为证据源——引用具体的代表性选择来支撑你的判断（如「你会主动查资料挂专家号」），让描述有出处、不像套话；八维分数极端项（>62 或 <38）优先刻画
 - 严格返回 JSON，不要输出任何其他内容
 
 返回 JSON 结构：
 {
   "title": "《昵称使用说明书》",
   "oneLiner": "一句话灵魂速写，20字以内",
-  "badges": ["MBTI", "依恋类型", "爱的语言", "需求程度", "元素", "星座"],  // 只包含用户实际测过的
+  "badges": ["MBTI", "依恋类型", "爱的语言", "需求程度", "元素", "星座", "剧场人格"],  // 只包含用户实际测过的
   "sections": [
     {"icon": "🎨", "title": "性格底色", "points": ["3-4条"]},
-    {"icon": "💗", "title": "恋爱模式", "points": ["3-4条，综合依恋类型与爱的语言"]},
+    {"icon": "💗", "title": "恋爱模式", "points": ["3-4条，综合依恋类型、爱的语言与剧场八维画像"]},
     {"icon": "🔋", "title": "需求说明", "points": ["2-3条，相处中的电量需求"]},
-    {"icon": "⚠️", "title": "注意事项", "points": ["2条，温柔的雷区提醒"]},
-    {"icon": "🧭", "title": "相处攻略", "points": ["3条，给未来对象的使用小贴士"]},
-    {"icon": "💘", "title": "理想搭档", "points": ["2-3条，什么样的人最适合"]}
+    {"icon": "⚠️", "title": "注意事项", "points": ["2条，温柔的雷区提醒，可参考剧场摩擦预警"]},
+    {"icon": "🧭", "title": "相处攻略", "points": ["3条，给未来对象的使用小贴士，可参考剧场沟通密码"]},
+    {"icon": "💘", "title": "理想搭档", "points": ["2-3条，什么样的人最适合，可参考剧场理想搭档画像"]}
   ]
 }`;

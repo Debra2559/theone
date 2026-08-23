@@ -29,7 +29,7 @@ const GameEngine = (() => {
     };
   }
 
-  /* 做一次选择：累计该选项对各维度的权重 */
+  /* 做一次选择：累计该选项对各维度的权重（并记录证据链原料） */
   function choose(session, scenarioId, optionIndex) {
     const scenario = SCENARIOS.find(s => s.id === scenarioId);
     if (!scenario) throw new Error(`场景不存在: ${scenarioId}`);
@@ -42,9 +42,12 @@ const GameEngine = (() => {
     });
     session.answers.push({
       scenarioId, optionIndex,
+      stage: scenario.stage,                          // 所属阶段（证据链/阶段小结）
+      title: scenario.title,                          // 幕名（证据链展示）
+      act: session.answers.length + 1,                // 第几幕
       optionText: option.text,
       insight: option.note,
-      weights: option.weights,            // 记录权重，供「返回上一题」撤销计分
+      weights: option.weights,                        // 记录权重，供「返回上一题」撤销计分 + 证据链
     });
     return option;
   }
@@ -81,5 +84,45 @@ const GameEngine = (() => {
     }));
   }
 
-  return { DIMENSIONS, dimKey, createSession, choose, undoLast, normalize, dimSummary };
+  /* 证据链：每个维度取权重贡献最大的 2~3 次选择作为「分数的出处」 */
+  function buildEvidence(session, maxPerDim = 3) {
+    const evidence = {};
+    DIMENSIONS.forEach(d => {
+      evidence[d.key] = (session.answers || [])
+        .filter(a => a.weights && a.weights[d.key])
+        .sort((x, y) => Math.abs(y.weights[d.key]) - Math.abs(x.weights[d.key]))
+        .slice(0, maxPerDim)
+        .map(a => ({
+          scene: `${a.scenarioId} · ${a.title}`,
+          act: a.act,
+          choice: a.optionText,
+          note: a.insight,
+          weight: a.weights[d.key],
+        }));
+    });
+    return evidence;
+  }
+
+  /* 阶段小结：各阶段的独立归一化分数（小结屏 + 画像 stage_stats） */
+  function stageStats(session) {
+    const out = {};
+    (typeof STAGES !== 'undefined' ? STAGES : []).forEach(st => {
+      const answers = (session.answers || []).filter(a => a.stage === st.key);
+      if (!answers.length) return;
+      const sums = {}, counts = {};
+      answers.forEach(a => Object.entries(a.weights || {}).forEach(([k, v]) => {
+        sums[k] = (sums[k] || 0) + v;
+        counts[k] = (counts[k] || 0) + 1;
+      }));
+      const dims = {};
+      DIMENSIONS.forEach(d => {
+        const c = counts[d.key] || 0;
+        dims[d.key] = c ? Math.max(0, Math.min(100, Math.round(50 + (sums[d.key] / c) * 25))) : 50;
+      });
+      out[st.key] = { label: st.label, count: answers.length, dims };
+    });
+    return out;
+  }
+
+  return { DIMENSIONS, dimKey, createSession, choose, undoLast, normalize, dimSummary, buildEvidence, stageStats };
 })();

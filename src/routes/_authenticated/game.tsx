@@ -3,12 +3,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, BookOpen, Loader2, Sparkles } from "@/components/app-icons";
 import { generateManual, getMyProfile, saveTestResult } from "@/lib/app.functions";
+import { avatarDataUri } from "@/lib/avatars";
 
 /**
  * 恋爱人格剧场 · 沉浸式互动小游戏
  *
  * 小游戏以 iframe 形式整体挂在 public/game/ 下独立运行（样式零冲突），
- * 玩家通关后游戏会 postMessage 画像结果（love-game:result），
+ * 进入时把用户资料（昵称/头像/性别）postMessage 注入游戏（love-game:profile），
+ * 游戏不再有开场表单，直接以宿主资料开局；
+ * 玩家通关后游戏会 postMessage 画像结果（love-game:result，含证据链与阶段统计），
  * 这里负责把结果写入 test_results（test_id = love-dialogue），
  * 之后「生成说明书」会自动把这份画像喂给 AI，产出更丰富的个人说明书。
  */
@@ -19,22 +22,31 @@ type GamePayload = {
     archetype_name?: string;
     archetype_emoji?: string;
     dimensions?: Record<string, number>;
+    evidence?: Record<string, unknown>;
+    stage_stats?: Record<string, unknown>;
     [key: string]: unknown;
   };
   choices: Array<{
     scenarioId: string;
+    stage?: string;
+    title?: string;
+    act?: number;
     optionIndex: number;
     optionText: string;
+    insight?: string;
+    weights?: Record<string, number>;
   }>;
+  stageStats?: Record<string, unknown>;
+  answeredAt?: string;
 };
 
 export const Route = createFileRoute("/_authenticated/game")({
   head: () => ({
     meta: [
       { title: "恋爱人格剧场 · 心动说明书" },
-      { name: "description", content: "15 幕沉浸式对话剧情，玩出你的爱情人格画像。" },
+      { name: "description", content: "30 幕沉浸式对话剧情，玩出你的爱情人格画像。" },
       { property: "og:title", content: "恋爱人格剧场 · 心动说明书" },
-      { property: "og:description", content: "15 幕沉浸式对话剧情，玩出你的爱情人格画像。" },
+      { property: "og:description", content: "30 幕沉浸式对话剧情，玩出你的爱情人格画像。" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -49,30 +61,52 @@ export const Route = createFileRoute("/_authenticated/game")({
 
 function GamePage() {
   const navigate = useNavigate();
+  const { profile } = Route.useLoaderData();
   const [synced, setSynced] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const saveToken = useRef(0); // 防重复保存（iframe 内重玩会再次上报）
+
+  /* 进入剧场：把用户资料注入游戏（昵称 / 头像 / 性别），游戏侧据此开局 */
+  const sendProfile = useCallback(() => {
+    iframeRef.current?.contentWindow?.postMessage(
+      {
+        type: "love-game:profile",
+        payload: {
+          nickname: profile?.nickname ?? "",
+          gender: profile?.gender ?? "",                  // 男生 | 女生 | 保密
+          avatar: profile?.avatar ?? "",                  // emoji 或 db: 插画头像标识
+          avatarImg: avatarDataUri(profile?.avatar) ?? "", // DiceBear 渲染好的 data URI
+        },
+      },
+      "*",
+    );
+  }, [profile]);
 
   const syncResult = useCallback(async (payload: GamePayload) => {
     const token = ++saveToken.current;
     setSaving(true);
+    setSynced(false);
     try {
       const p = payload.profile ?? {};
       const label = `${p.archetype_emoji ?? "🎭"} ${p.archetype_name ?? "恋爱人格"}`;
+      const cp = p["communicate_password"];
       const summary =
-        (p.communicate_password && typeof p.communicate_password === "object"
-          ? String((p.communicate_password as { label?: string }).label ?? "")
-          : "") || "由 15 幕对话剧情生成的爱情人格画像";
+        (Array.isArray(cp) && cp.length
+          ? cp.filter(Boolean).join("；")
+          : typeof cp === "string"
+            ? cp
+            : "") || "由 30 幕对话剧情生成的爱情人格画像";
       await saveTestResult({
         data: {
           test_id: "love-dialogue",
-          answers: { choices: payload.choices ?? [] },
+          answers: { choices: payload.choices ?? [], stageStats: payload.stageStats ?? p.stage_stats ?? {} },
           result: {
             type: p.archetype ?? "unknown",
             label,
             summary,
-            detail: p,
+            detail: p, // 完整画像（含 evidence 证据链 / stage_stats / dimension_confidence）
           },
         },
       });
@@ -112,12 +146,14 @@ function GamePage() {
 
   return (
     <div className="fixed inset-0 z-50 bg-[#0d0a14]">
-      {/* 游戏本体：iframe 全屏，独立运行 */}
+      {/* 游戏本体：iframe 全屏，独立运行；onLoad 后注入用户资料 */}
       <iframe
+        ref={iframeRef}
         src="/game/index.html"
         title="恋爱人格剧场"
         className="h-full w-full border-0"
         allow="fullscreen"
+        onLoad={sendProfile}
       />
 
       {/* 顶部退出条 */}

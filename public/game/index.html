@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>恋爱时光机 · 玩着玩着就懂自己</title>
+<title>恋爱人格剧场 · 心动说明书</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -16,23 +20,12 @@
   <section id="screen-intro" class="screen">
     <div class="hero">
       <div class="logo">💞</div>
-      <h1>恋爱时光机</h1>
-      <p class="subtitle">没有问卷，只有相遇、相处与分岔路<br>12 个瞬间，玩着玩着，就认识了自己</p>
+      <h1>恋爱人格剧场</h1>
+      <p class="subtitle">没有问卷，只有相遇、相处与分岔路<br>30 个瞬间，玩着玩着，就认识了自己</p>
     </div>
 
     <div class="card intro-card">
-      <label class="field">
-        <span>先给这本说明书签个名</span>
-        <input id="nickname" type="text" maxlength="12" placeholder="你的昵称（可留空）" />
-      </label>
-      <div class="field">
-        <span>这趟旅程，你想遇见</span>
-        <div class="pref-switch" id="ta-pref">
-          <button type="button" data-pref="f" class="on">女生</button>
-          <button type="button" data-pref="m">男生</button>
-          <button type="button" data-pref="any">随缘</button>
-        </div>
-      </div>
+      <p class="intro-greet" id="intro-greet"></p>
       <button class="btn primary big" onclick="App.start()">开始这趟旅程 →</button>
       <p id="intro-me-tip" class="muted small"></p>
       <p class="divider" id="intro-partner-tip"></p>
@@ -56,7 +49,7 @@
         <div class="stage-chip" id="stage-chip">初识期</div>
         <div class="progress">
           <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
-          <span class="progress-text" id="progress-text">1 / 15</span>
+          <span class="progress-text" id="progress-text">1 / 30</span>
         </div>
         <button class="btn ghost back-btn" id="btn-back" onclick="App.goBack()" disabled>⬅ 上一题</button>
       </header>
@@ -69,6 +62,19 @@
       <div id="insight-toast" class="insight hidden">
         <span id="insight-text"></span>
       </div>
+    </div>
+  </section>
+
+  <!-- ==================== 阶段小结（30 幕的呼吸点） ==================== -->
+  <section id="screen-interlude" class="screen hidden">
+    <div class="interlude-card">
+      <p class="interlude-eyebrow" id="il-eyebrow">第一站 · 到站</p>
+      <h2 id="il-stage-name">初识期</h2>
+      <p class="interlude-quote" id="il-quote"></p>
+      <div class="interlude-note" id="il-note"></div>
+      <h3 class="interlude-sub">此刻的你</h3>
+      <div id="il-dims" class="dim-bars"></div>
+      <button class="btn primary big" id="il-continue">继续旅程 →</button>
     </div>
   </section>
 
@@ -97,6 +103,11 @@
       <h3 class="sec-title">📊 我的画像雷达</h3>
       <div class="radar-wrap"><canvas id="radar"></canvas></div>
       <div id="dim-bars" class="dim-bars"></div>
+
+      <!-- 证据链：每个维度的分数都有出处 -->
+      <h3 class="sec-title">🧾 我的证据链</h3>
+      <p class="muted small" style="margin-bottom:10px">画像不是猜的——每个分数背后，是你在剧中做过的真实选择。</p>
+      <div id="r-evidence" class="evidence-wrap"></div>
 
       <!-- 沟通密码 -->
       <h3 class="sec-title">🗝️ 我的沟通密码</h3>
@@ -158,7 +169,7 @@
         <pre id="json-payload"></pre>
       </details>
 
-      <p class="muted small center">《恋爱时光机》Demo · 画像由选择轨迹生成，报告可对接推荐算法匹配与心元大模型分析</p>
+      <p class="muted small center">《恋爱人格剧场》· 画像由 30 幕选择轨迹生成，报告可对接推荐算法匹配与心元大模型分析</p>
     </div>
   </section>
 

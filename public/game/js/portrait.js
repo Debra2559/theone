@@ -207,22 +207,29 @@ const Portrait = (() => {
       subStyle: subStyle(dims),
       idealPartner: idealPartner(dims),
       answerCount: session.answers.length,
+      /* v2.0：证据链（每维度的关键选择）+ 阶段统计 + 置信度 */
+      evidence: GameEngine.buildEvidence(session),
+      stageStats: GameEngine.stageStats(session),
+      confidence: Object.assign({}, session.counts),   // 各维度被探测次数
       /* 预留字段：后续由匹配算法 / 心元大模型填充 */
       aiInsight: null,
       compatibility: null,
     };
   }
 
-  /* ---------- 序列化：可下发到分析接口的 profile JSON ---------- */
+  /* ---------- 序列化：可下发到分析接口的 profile JSON（v2.0） ---------- */
   function toProfileJson(manual) {
     return {
-      schema_version: '1.0',
+      schema_version: '2.0',
       nickname: manual.nickname,
       generated_at: new Date().toISOString().slice(0, 19),
       archetype: manual.archetype.key,          // 人格标识（匹配算法消费）
       archetype_name: manual.archetype.name,    // 人格中文名（展示/心元文案消费）
       archetype_emoji: manual.archetype.emoji,
       dimensions: manual.dimensions,
+      dimension_confidence: manual.confidence,  // 各维度证据条数（置信度）
+      evidence: manual.evidence,                // 证据链：维度 → 关键选择（AI 说明书引用）
+      stage_stats: manual.stageStats,           // 各阶段独立画像（观察关系演变）
       communicate_password: manual.communicatePassword,
       relationship_pattern: manual.relationshipPattern,
       friction_alerts: manual.frictionAlerts,
