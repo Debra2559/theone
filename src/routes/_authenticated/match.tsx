@@ -16,7 +16,6 @@ import {
   ArrowRight,
   MapPin,
   RotateCcw,
-  ChevronRight,
   Loader2,
 } from "@/components/app-icons";
 import { getMyProfile } from "@/lib/app.functions";
@@ -114,7 +113,6 @@ function Match() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const fresh = candidates.filter((c) => !c.matched);
-  const matched = candidates.filter((c) => c.matched);
   const visibleCandidates = fresh.length > 0 ? fresh : candidates;
   const current =
     visibleCandidates.length > 0 ? visibleCandidates[index % visibleCandidates.length] : undefined;
@@ -136,11 +134,7 @@ function Match() {
     setPending(true);
     try {
       const { id } = await createMatch({
-        data: {
-          personaId: current.persona.id,
-          score: current.score,
-          highlights: current.highlights,
-        },
+        data: { personaId: current.persona.id },
       });
       toast.success(
         superLike ? "超级喜欢已送达 ✨ TA 会优先看到你" : "心动成功，去翻你们的关系说明书吧 💗",
@@ -473,36 +467,6 @@ function Match() {
           </div>
         )}
       </div>
-
-      {/* 已心动 */}
-      {matched.length > 0 && (
-        <section className="mt-6">
-          <h2 className="font-display text-base font-semibold">已心动 💗</h2>
-          <div className="mt-3 flex gap-3 overflow-x-auto pb-1">
-            {matched.map((c) => (
-              <button
-                key={c.persona.id}
-                onClick={() =>
-                  c.matchId && navigate({ to: "/match/$matchId", params: { matchId: c.matchId } })
-                }
-                className="dreamy-card flex shrink-0 items-center gap-2.5 p-3 pr-4 transition-transform hover:-translate-y-0.5"
-              >
-                <span className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-primary/15">
-                  <UserAvatar avatar={c.persona.avatar} className="h-full w-full text-xl" />
-                </span>
-                <div className="text-left">
-                  <p className="text-xs font-semibold">
-                    {c.persona.nickname} · {c.score}%
-                  </p>
-                  <p className="flex items-center text-[10px] text-primary">
-                    关系说明书 <ChevronRight className="h-3 w-3" />
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
     </AppShell>
   );
 }
