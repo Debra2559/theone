@@ -15,6 +15,7 @@ import {
 } from "@/components/app-icons";
 import { getMyProfile } from "@/lib/app.functions";
 import { createThread, deleteThread, listThreads } from "@/lib/counselor.functions";
+import { listMyMatches } from "@/lib/match.functions";
 import { AppShell, RouteError } from "@/components/app-shell";
 import { UserAvatar } from "@/components/user-avatar";
 import { clearOneOnOneLock, getOneOnOneLock, subscribeToOneOnOneLock } from "@/lib/one-on-one";
@@ -42,7 +43,8 @@ export const Route = createFileRoute("/_authenticated/counselor")({
   loader: async () => {
     const profile = await getMyProfile();
     if (!profile?.onboarding_done) throw redirect({ to: "/onboarding" });
-    return listThreads();
+    const [threads, matches] = await Promise.all([listThreads(), listMyMatches()]);
+    return { threads, matches };
   },
   errorComponent: RouteError,
   component: Counselor,
@@ -67,7 +69,10 @@ const TYPE_BADGES: Record<string, string> = {
 };
 
 function Counselor() {
-  const threads = Route.useLoaderData() as ThreadView[];
+  const { threads, matches } = Route.useLoaderData() as {
+    threads: ThreadView[];
+    matches: InteractionMatch[];
+  };
   const navigate = useNavigate();
   const [tab, setTab] = useState<"messages" | "activity">("messages");
   const [matchesOpen, setMatchesOpen] = useState(true);
@@ -84,10 +89,6 @@ function Counselor() {
 
   useEffect(() => subscribeToOneOnOneLock(() => setOneOnOneLock(getOneOnOneLock())), []);
 
-  const matchThreads = useMemo(
-    () => threads.filter((thread) => thread.context_type === "match").slice(0, 3),
-    [threads],
-  );
   const visibleThreads = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     return threads.filter((thread) => {
@@ -205,7 +206,7 @@ function Counselor() {
                 }`}
               >
                 动态
-                {matchThreads.length > 0 && (
+                {matches.length > 0 && (
                   <span className="absolute -right-2 top-0 h-2 w-2 rounded-full bg-destructive" />
                 )}
               </button>
@@ -218,11 +219,11 @@ function Counselor() {
             <section className="mt-7">
               <div className="flex items-center justify-between">
                 <h2 className="font-display text-xl font-semibold">
-                  新的匹配 <span className="text-muted-foreground">({matchThreads.length})</span>
+                  已心动 <span className="text-muted-foreground">({matches.length})</span>
                 </h2>
                 <button
-                  aria-label={matchesOpen ? "收起新的匹配" : "展开新的匹配"}
-                  title={matchesOpen ? "收起新的匹配" : "展开新的匹配"}
+                  aria-label={matchesOpen ? "收起已心动" : "展开已心动"}
+                  title={matchesOpen ? "收起已心动" : "展开已心动"}
                   onClick={() => setMatchesOpen((value) => !value)}
                   className="rounded-full p-2 text-muted-foreground transition-transform hover:bg-secondary"
                 >
@@ -247,28 +248,23 @@ function Counselor() {
                       我的说明书
                     </span>
                   </Link>
-                  {matchThreads.map((thread) => {
-                    const persona = getPersona(thread);
+                  {matches.map((match) => {
                     return (
                       <button
-                        key={thread.id}
+                        key={match.id}
                         onClick={() =>
-                          navigate({ to: "/counselor/$threadId", params: { threadId: thread.id } })
+                          navigate({ to: "/match/$matchId", params: { matchId: match.id } })
                         }
                         className="group flex w-[72px] shrink-0 flex-col items-center gap-2"
                       >
                         <span className="flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-[22px] border border-border bg-secondary shadow-sm transition-transform group-hover:-translate-y-0.5">
-                          {persona ? (
-                            <UserAvatar
-                              avatar={persona.avatar}
-                              className="h-full w-full text-3xl"
-                            />
-                          ) : (
-                            <img src={foxImg} alt="" className="h-full w-full object-contain p-2" />
-                          )}
+                          <UserAvatar
+                            avatar={match.person.avatar}
+                            className="h-full w-full text-3xl"
+                          />
                         </span>
                         <span className="max-w-full truncate text-xs text-muted-foreground">
-                          {persona?.nickname ?? thread.title}
+                          {match.person.nickname}
                         </span>
                       </button>
                     );
@@ -463,25 +459,22 @@ function Counselor() {
                 </div>
               </div>
             </div>
-            {matchThreads.map((thread) => {
-              const persona = getPersona(thread);
+            {matches.map((match) => {
               return (
                 <button
-                  key={thread.id}
-                  onClick={() =>
-                    navigate({ to: "/counselor/$threadId", params: { threadId: thread.id } })
-                  }
+                  key={match.id}
+                  onClick={() => navigate({ to: "/match/$matchId", params: { matchId: match.id } })}
                   className="flex w-full items-center gap-3 rounded-2xl border border-border/70 bg-card p-4 text-left transition-colors hover:bg-secondary/50"
                 >
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-secondary">
-                    <UserAvatar avatar={persona?.avatar} className="h-full w-full text-xl" />
+                    <UserAvatar avatar={match.person.avatar} className="h-full w-full text-xl" />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-semibold">
-                      {persona?.nickname ?? thread.title} 的匹配消息
+                      {match.person.nickname} 的关系说明书
                     </span>
                     <span className="mt-1 block truncate text-xs text-muted-foreground">
-                      {thread.preview}
+                      {match.highlights[0] ?? "你们的关系说明书已经准备好了"}
                     </span>
                   </span>
                   <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -504,6 +497,19 @@ type ThreadView = {
   preview?: string;
   previewAt?: string;
   matches: unknown;
+};
+
+type InteractionMatch = {
+  id: string;
+  score: number;
+  highlights: string[];
+  status: string;
+  person: {
+    nickname: string;
+    avatar?: string | null;
+    tagline?: string | null;
+    city?: string | null;
+  };
 };
 
 function getPersona(thread: ThreadView) {

@@ -32,8 +32,18 @@ export function extractManualLike(
     attachment: resultMap["attachment"]?.label ?? str(c["attachment"]),
     loveLanguage: resultMap["loveLanguage"]?.label ?? str(c["loveLanguage"]),
     needs: resultMap["needs"]?.label ?? str(c["needs"]),
+    relationshipGoal: str(c["goal"]) ?? str(c["relationshipGoal"]),
+    communicationStyle: str(c["communicationStyle"]),
+    relationshipPace: str(c["relationshipPace"]),
     hobbies: arr(c["hobbies"]),
     values: arr(c["values"]),
+    profileCompletion:
+      Object.values(c).filter((value) => {
+        if (typeof value === "string") return value.trim().length > 0;
+        return Array.isArray(value) ? value.length > 0 : value !== null && value !== undefined;
+      }).length > 4
+        ? 100
+        : 65,
   };
 }
 
@@ -213,12 +223,39 @@ export const createMatch = createServerFn({ method: "POST" })
     z
       .object({
         personaId: z.string().uuid(),
-        score: z.number(),
-        highlights: z.array(z.string()),
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    const [{ data: profile }, { data: results }, { data: manualRow }, { data: persona }] =
+      await Promise.all([
+        context.supabase.from("profiles").select("*").eq("id", context.userId).maybeSingle(),
+        context.supabase
+          .from("test_results")
+          .select("test_id, result")
+          .eq("user_id", context.userId),
+        context.supabase
+          .from("user_manuals")
+          .select("content")
+          .eq("user_id", context.userId)
+          .maybeSingle(),
+        context.supabase.from("personas").select("*").eq("id", data.personaId).maybeSingle(),
+      ]);
+    if (!persona) throw new Error("推荐对象不存在");
+    const resultMap: Record<string, { label?: string }> = {};
+    for (const result of results ?? [])
+      resultMap[result.test_id] = result.result as { label?: string };
+    const me = extractManualLike(resultMap, manualRow?.content);
+    const candidate = normalizeDatabasePersona(persona as CandidatePersona);
+    const candidateManual = (candidate.manual ?? {}) as ManualLike;
+    const candidateTags = Array.isArray(candidate.tags) ? (candidate.tags as string[]) : [];
+    const { score, highlights } = scorePair(
+      me,
+      candidateManual,
+      Boolean(profile?.city && profile.city === candidate.city),
+      me.hobbies ?? [],
+      candidateTags,
+    );
     const { data: existing } = await context.supabase
       .from("matches")
       .select("id")
@@ -232,13 +269,61 @@ export const createMatch = createServerFn({ method: "POST" })
       .insert({
         user_id: context.userId,
         persona_id: data.personaId,
-        score: data.score,
-        highlights: data.highlights,
+        score,
+        highlights,
       })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
     return { id: row.id };
+  });
+
+export const listMyMatches = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("matches")
+      .select(
+        "id, score, highlights, status, created_at, user_id, matched_user_id, persona_id, personas(nickname, avatar, tagline, age, city, bio, tags, manual)",
+      )
+      .or(`user_id.eq.${context.userId},matched_user_id.eq.${context.userId}`)
+      .neq("status", "dismissed")
+      .order("created_at", { ascending: false });
+    if (error) throw new Error(error.message);
+
+    const rows = data ?? [];
+    const partnerIds = rows
+      .filter((row) => !row.personas)
+      .map((row) => (row.user_id === context.userId ? row.matched_user_id : row.user_id))
+      .filter((id): id is string => Boolean(id));
+    const { data: profiles } = partnerIds.length
+      ? await context.supabase
+          .from("profiles")
+          .select("id, nickname, avatar, bio, city")
+          .in("id", partnerIds)
+      : { data: [] };
+    const partners = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
+
+    return rows.flatMap((row) => {
+      const partnerId = row.user_id === context.userId ? row.matched_user_id : row.user_id;
+      const person = row.personas ?? (partnerId ? partners.get(partnerId) : null);
+      if (!person) return [];
+      return [
+        {
+          id: row.id,
+          score: row.score,
+          highlights: Array.isArray(row.highlights) ? row.highlights : [],
+          status: row.status,
+          createdAt: row.created_at,
+          person: {
+            nickname: person.nickname,
+            avatar: person.avatar,
+            tagline: "tagline" in person ? person.tagline : person.bio,
+            city: person.city,
+          },
+        },
+      ];
+    });
   });
 
 export const getMatch = createServerFn({ method: "GET" })

@@ -10,7 +10,7 @@ import {
   Sparkles,
 } from "@/components/app-icons";
 import { getMyProfile } from "@/lib/app.functions";
-import { getMatchCandidates } from "@/lib/match.functions";
+import { createMatch, generateRelationshipManual, getMatchCandidates } from "@/lib/match.functions";
 import { clearOneOnOneLock, getOneOnOneLock, setOneOnOneLock } from "@/lib/one-on-one";
 import { AppShell } from "@/components/app-shell";
 import { UserAvatar } from "@/components/user-avatar";
@@ -41,12 +41,39 @@ function OneOnOne() {
   const { profile, candidate } = Route.useLoaderData();
   const [stage, setStage] = useState<Stage>("notice");
   const [wish, setWish] = useState("");
+  const [matchId, setMatchId] = useState<string | null>(null);
+  const [manualState, setManualState] = useState<"idle" | "generating" | "ready" | "error">("idle");
 
   useEffect(() => {
     if (stage !== "pull") return;
     const timer = window.setTimeout(() => setStage("bridge"), 4600);
     return () => window.clearTimeout(timer);
   }, [stage]);
+
+  useEffect(() => {
+    if (stage !== "bridge" || !candidate || manualState === "generating" || manualState === "ready")
+      return;
+    let cancelled = false;
+    const pair = async () => {
+      setManualState("generating");
+      try {
+        const id = matchId ?? (await createMatch({ data: { personaId: candidate.persona.id } })).id;
+        if (cancelled) return;
+        setMatchId(id);
+        await generateRelationshipManual({ data: { matchId: id } });
+        if (!cancelled) setManualState("ready");
+      } catch (error) {
+        if (!cancelled) {
+          setManualState("error");
+          toast.error(error instanceof Error ? error.message : "关系说明书生成失败");
+        }
+      }
+    };
+    void pair();
+    return () => {
+      cancelled = true;
+    };
+  }, [candidate, manualState, matchId, stage]);
 
   const nickname = candidate?.persona.nickname ?? "这位心动对象";
   const avatar = candidate?.persona.avatar;
@@ -258,16 +285,33 @@ function OneOnOne() {
 
             {stage === "bridge" && (
               <div className="relative z-10 mt-5 rounded-2xl bg-card/80 p-4 text-center shadow-sm backdrop-blur">
-                <p className="text-sm font-semibold">诉求已收到</p>
+                <p className="text-sm font-semibold">你们已经到桥边</p>
                 <p className="mt-1 text-xs leading-5 text-muted-foreground">“{wish}”</p>
                 <div className="mt-4 flex gap-2">
-                  <Link
-                    to="/counselor"
-                    className="btn-starlight flex flex-1 items-center justify-center gap-1 rounded-full px-4 py-2.5 text-sm font-semibold"
-                  >
-                    去聊天
-                    <MessageCircleHeart className="h-4 w-4" />
-                  </Link>
+                  {manualState === "ready" && matchId ? (
+                    <Link
+                      to="/match/$matchId"
+                      params={{ matchId }}
+                      className="btn-starlight flex flex-1 items-center justify-center gap-1 rounded-full px-4 py-2.5 text-sm font-semibold"
+                    >
+                      查看你们的关系说明书
+                      <MessageCircleHeart className="h-4 w-4" />
+                    </Link>
+                  ) : manualState === "error" ? (
+                    <button
+                      type="button"
+                      onClick={() => setManualState("idle")}
+                      className="btn-starlight flex flex-1 items-center justify-center gap-1 rounded-full px-4 py-2.5 text-sm font-semibold"
+                    >
+                      重新生成说明书
+                      <Sparkles className="h-4 w-4" />
+                    </button>
+                  ) : (
+                    <div className="flex flex-1 items-center justify-center gap-2 rounded-full bg-primary/10 px-4 py-2.5 text-sm font-semibold text-primary">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      正在为你们写关系说明书…
+                    </div>
+                  )}
                 </div>
                 <button
                   type="button"

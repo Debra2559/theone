@@ -1940,11 +1940,14 @@
 }
 .one-on-one-scene.is-bridge .traveler-me {
   animation: none;
-  transform: translateX(calc(var(--travel-distance) * 0.86)) translateY(2px) rotate(0);
+  left: calc(50% - 72px);
+  transform: translateX(-50%) translateY(2px) rotate(0);
 }
 .one-on-one-scene.is-bridge .traveler-them {
   animation: none;
-  transform: translateX(calc(var(--travel-distance) * -0.86)) translateY(2px) rotate(0);
+  right: auto;
+  left: calc(50% + 72px);
+  transform: translateX(-50%) translateY(2px) rotate(0);
 }
 .one-on-one-scene.is-bridge .bridge-seam {
   animation: none;
@@ -1970,11 +1973,14 @@
   }
 
   .one-on-one-scene.is-bridge .traveler-me {
-    transform: translateX(calc(var(--travel-distance) * 0.86)) translateY(2px);
+    left: calc(50% - 72px);
+    transform: translateX(-50%) translateY(2px);
   }
 
   .one-on-one-scene.is-bridge .traveler-them {
-    transform: translateX(calc(var(--travel-distance) * -0.86)) translateY(2px);
+    right: auto;
+    left: calc(50% + 72px);
+    transform: translateX(-50%) translateY(2px);
   }
 }
 
