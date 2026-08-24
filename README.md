@@ -1,54 +1,67 @@
-# theone · 心动说明书
+# 见己 · Relationship OS
 
-一款「理解自己，再遇见对的人」的恋爱人格 Web App：做轻测试、玩沉浸式剧情、生成专属《个人说明书》，并以此驱动 1v1 匹配与 AI 恋爱军师。
+> 先认识自己，再遇见同频的人。
 
-## 功能一览
+见己是一款面向认真关系的移动产品：用轻测试整理关系信号，用匹配推荐找到更接近的人，用 1v1 和 AI 军师陪伴关系自然发生。
 
-| 模块                              | 说明                                                                    |
-| --------------------------------- | ----------------------------------------------------------------------- |
-| 🏠 理解页（`/home`）              | 测试进度总览、说明书入口、狐军师入口                                    |
-| 🧪 轻测试乐园                     | MBTI 速测、依恋类型、爱的语言、高低需求、四元素气质、星座档案、八字速览 |
-| 🎭 **恋爱人格剧场（本分支新增）** | 30 幕沉浸式对话剧情小游戏，玩着玩着就画出你的爱情人格画像               |
-| 📖 我的说明书（`/manual`）        | 汇总所有测试与剧场画像，AI 生成翻页式个人说明书                         |
-| 💞 匹配（`/match`）               | 基于画像的缘分匹配                                                      |
-| 🦊 狐军师（`/counselor`）         | AI 情感顾问，开场白 / 见面时机 / 吵架救场随时问                         |
+## 产品定位
 
-## 恋爱人格剧场（Love Dialogue Game）
+| 模块 | 解决的问题 |
+| --- | --- |
+| 个人说明书 | 把性格、需求、沟通方式整理成可阅读的关系画像 |
+| 关系测试 | 用低压力的短测试持续理解自己 |
+| 深度匹配 | 基于测试、资料和关系目标寻找更适合的人 |
+| 1v1 匹配 | 一次只专注一个人，减少选择疲劳 |
+| AI 军师 | 提供回复建议、关系判断和见面方案 |
 
-原独立 demo 的互动剧情游戏，现已集成为第 8 个「测试」，**用户可自主选择是否游玩**：
+## 展示页
 
-- **入口**：理解页「轻测试乐园」中的「🎭 恋爱人格剧场」卡片（也可直达 `/game`）
-- **玩法**：30 幕场景对话（凌晨初聊 → 心动 → 热恋 → 摩擦 → 冲突 → 深谈），每幕 3 选 1，选择即画像
-- **表现层**：零图片、全程序化的「UI 即场景」——Canvas 色彩场 + 环境粒子 + 场景符号线稿 + 打字节奏拟情绪（详见 `public/game/`）
-- **数据流**：通关后游戏通过 `postMessage` 上报画像 JSON → 写入 `test_results`（`test_id = love-dialogue`）→ 一键「更新我的说明书」，AI 会把这份画像与其它测试结果融合，生成更丰富的人格说明书
+完整产品展示页已上传至仓库：[打开静态展示页](./public/showcase/index.html)
 
-### 集成架构
+展示页包含：产品主视觉、Soft Collage 拼贴、Case Study 案例页、Feature Map 功能矩阵。
 
-```
-src/routes/_authenticated/game.tsx   # /game 路由：全屏 iframe 宿主 + 结果监听与落库
-src/lib/tests.ts                     # 注册 kind: "game" 测试项（首页卡片自动出现）
-src/routes/_authenticated/home.tsx   # 游戏卡片链接分流到 /game
-public/game/                         # 游戏本体（vanilla JS，独立运行、样式零冲突）
-  ├── index.html / css/ / assets/
-  └── js/  app.js（结局 postMessage 上报）· scenarios.js（30 幕剧本）
-           engine.js（计分引擎）· portrait.js（画像生成）· dialogue.js / scene-backdrop.js / motifs.js（表现层）
-```
+## 产品截图
 
-游戏在 iframe 内完全独立运行，与宿主 App 仅通过一条 `love-game:result` 消息通信，可随时整体替换或独立演进。
+### 首页与说明书
+
+<p align="center">
+  <img src="public/showcase/home.png" width="31%" alt="见己首页" />
+  <img src="public/showcase/manual.png" width="31%" alt="个人说明书" />
+  <img src="public/showcase/messages.png" width="31%" alt="消息页" />
+</p>
+
+### 推荐与 1v1
+
+<p align="center">
+  <img src="public/showcase/recommend.png" width="31%" alt="推荐页" />
+  <img src="public/showcase/one-to-one-intro.png" width="31%" alt="1v1 匹配入口" />
+  <img src="public/showcase/one-to-one-waiting.png" width="31%" alt="1v1 匹配中" />
+</p>
 
 ## 本地开发
 
+需要 Node.js 20+ 与 npm。
+
 ```sh
-git clone https://github.com/Debra2559/theone.git
-cd theone
-bun i        # 或 npm i
-bun run dev  # 或 npm run dev
+git clone https://github.com/Debra2559/jianji-relationship-os.git
+cd jianji-relationship-os
+npm install
+npm run dev
 ```
-
-需要配置 Supabase 环境变量（见 `src/integrations/supabase/client.ts`），数据库迁移脚本在 `supabase/migrations/`。
-
-游戏本体亦可脱离 App 独立预览：直接打开 `public/game/index.html`。
 
 ## 技术栈
 
-TanStack Start · React 19 · TypeScript · Tailwind CSS 4 · Supabase · Vite（Lovable 生成项目）
+- TanStack Start
+- TypeScript
+- React
+- Tailwind CSS
+- Supabase
+- AI SDK
+
+## 目录
+
+```text
+src/                    产品应用
+public/showcase/        产品截图与静态展示页
+supabase/               数据库迁移与配置
+```
